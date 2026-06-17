@@ -1,64 +1,87 @@
-import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import Navbar from "@/components/ui/Navbar";
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: decks, error } = await supabase
-    .from("decks")
-    .select("*")
-    .order("created_at", { ascending: false });
- 
-  if (error) {
-    console.error(error);
-  }
-
-  if (!user) {
-    redirect("/login");
-  }
+export default function DashboardPage() {
 
   return (
-    <div>
-        <h1>
-            Deckify Dashboard
+
+    <main className="mx-auto max-w-6xl px-8">
+
+      <Navbar />
+
+
+      <section className="mt-10">
+
+        <h1 className="text-4xl font-bold">
+          Welcome back 👋
         </h1>
 
-        <p>
-            Welcome {user?.email}
+
+        <p className="mt-2 text-zinc-400">
+          Continue building your knowledge.
         </p>
-        
-        <Link href="/decks/new">
-            Create Deck
-        </Link>
 
-        {decks?.length === 0 && (
-            <p>
-                No decks yet.
+
+        <div className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
+
+          <p className="text-zinc-400">
+            Current Streak
+          </p>
+          
+          <h2 className="mt-2 text-4xl font-bold">
+            🔥 7 days
+          </h2>
+
+        </div>
+
+
+      </section>
+
+
+      <section className="mt-12">
+
+
+        <div className="flex justify-between">
+
+          <h2 className="text-2xl font-semibold">
+            Continue Learning
+          </h2>
+
+
+          <button
+            className="
+            rounded-xl
+            bg-green-500
+            px-5
+            py-3
+            font-medium
+            text-black
+            hover:bg-green-400
+            "
+          >
+            + New Deck
+          </button>
+
+
+        </div>
+
+
+        <div className="mt-20 text-center">
+
+            <h2 className="text-2xl font-bold">
+                No decks yet
+            </h2>
+
+            <p className="mt-3 text-zinc-400">
+                Create your first deck and start learning
             </p>
-        )}
+        </div>
 
-        {decks?.map((deck) => (
-            <Link
-                key={deck.id}
-                href={`/decks/${deck.id}`}
-            >
-                <div >
-                    <h3>
-                        {deck.title}
-                    </h3>
 
-                    <p>
-                        {deck.description}
-                    </p>
-                </div>
-            </Link>
-            
-        ))}
-    </div>
+      </section>
+
+
+    </main>
+
   );
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import StudyCard from "@/components/ui/StudyCard";
 import { createClient } from "@/lib/supabase/client";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -21,6 +24,8 @@ export default function StudyPage() {
   const [showAnswer, setShowAnswer] = useState(false);
 
     const card = cards[currentIndex];
+
+    const progress = ((currentIndex + 1) / cards.length) * 100;
 
   async function loadCards() {
 
@@ -55,9 +60,21 @@ export default function StudyPage() {
 
   if (cards.length === 0) {
     return (
-      <div>
-        <h1>No cards to study</h1>
-      </div>
+        <main className="mx-auto max-w-3xl p-8">
+            <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
+                <h1 className="text-5xl">
+                    Congratulations!
+                </h1>
+
+                <h2 className="mt-6 text-3xl font-bold">
+                    You're done for today
+                </h2>
+
+                <p className="mt-3 text-zinc-400">
+
+                </p>
+            </div>
+        </main>
     );
   }
 
@@ -151,51 +168,75 @@ export default function StudyPage() {
   }
 
   return (
-    <div>
-      <h1>
-        Study Mode
-      </h1>
 
-      <p>
-        {cards.length} cards due today
-      </p>
+    <main className="mx-auto max-w-4xl p-8">
+        <div className="mb-8">
 
-      <div>
-        {!showAnswer ? (
-          <h2>
-            {card.front}
-          </h2>
-        ) : (
-          <h2>
-            {card.back}
-          </h2>
-        )}
-      </div>
+            <h1 className="text-3xl font-bold">
+                Study Mode
+            </h1>
 
-      {!showAnswer ? (
-        <button onClick={() => setShowAnswer(true)}>
-          Reveal Answer
-        </button>
-      ) : (
-        <div>
-          <button onClick={() => submitReview("again")}>
-            Again
-          </button>
-
-          <button onClick={() => submitReview("hard")}>
-            Hard
-          </button>
-
-          <button onClick={() => submitReview("good")}>
-            Good
-          </button>
-
-          <button onClick={() => submitReview("easy")}>
-            Easy
-          </button>
+            <p className="mt-2 text-zinc-400">
+                {currentIndex + 1} / {cards.length} cards
+            </p>
         </div>
-      )}
 
-    </div>
+        <Progress
+            value={progress}
+            className="mb-8"
+        />
+
+
+        <StudyCard
+            content={
+                showAnswer
+                    ? card.back
+                    : card.front
+            }
+        />
+
+        {!showAnswer ? (
+            <div className="mt-8 flex justify-center">
+
+                <Button
+                    size="lg"
+                    onClick={() => setShowAnswer(true)}
+                >
+                    Reveal Answer
+                </Button>
+            </div>
+        ) : (
+
+            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+
+                <Button
+                    variant="destructive"
+                    onClick={() => submitReview("again")}
+                >
+                    Again
+                </Button>
+
+                <Button
+                    variant="secondary"
+                    onClick={() => submitReview("hard")}
+                >
+                    Hard
+                </Button>
+
+                <Button
+                    onClick={() => submitReview("good")}
+                >
+                    Good
+                </Button>
+
+                <Button
+                    className="bg-green-500 hover:bg-green-400"
+                    onClick={() => submitReview("easy")}
+                >
+                    Easy
+                </Button>
+            </div>
+        )}
+    </main>
   );
 }
