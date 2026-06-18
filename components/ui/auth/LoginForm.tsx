@@ -1,5 +1,6 @@
 "use client";
 
+import { redirectAfterAuth } from "@/lib/auth/redirectAfterAuth";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,7 +34,8 @@ export default function LoginForm() {
             setError(error.message);
             
         } else{
-            router.push("/dashboard");
+            
+            await redirectAfterAuth(router);
             router.refresh();
         }
 
