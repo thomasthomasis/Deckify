@@ -1,49 +1,38 @@
-"use client";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import AuthBackground from "@/components/ui/auth/AuthBackground";
+import AuthCard from "@/components/ui/auth/AuthCard";
+import LoginForm from "@/components/ui/auth/LoginForm";
 
-export default function LoginPage() {
-  const supabase = createClient();
-  const router = useRouter();
+export default async function LoginPage() {
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const supabase = await createClient();
+  
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
 
-  async function handleLogin() {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      router.push("/dashboard");
-    }
+  if(user) {
+    redirect("/dashboard");
   }
 
+  
   return (
-    <div>
-      <h1>Login</h1>
 
-      <input
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-950 px-6 text-white">
 
-      <input
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+      <AuthBackground />
 
-      <button onClick={handleLogin}>
-        Login
-      </button>
-    </div>
-  );
+      <AuthCard
+        title="Welcome Back"
+        subtitle="Continue your learning journey"
+      >
+
+      <LoginForm />
+
+      </AuthCard>
+
+    </main>
+  )
 }

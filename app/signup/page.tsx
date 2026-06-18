@@ -1,47 +1,31 @@
-"use client";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/client";
-import { useState } from "react";
+import AuthBackground from "@/components/ui/auth/AuthBackground";
+import AuthCard from "@/components/ui/auth/AuthCard";
+import SignupForm from "@/components/ui/auth/SignupForm";
 
-export default function SignupPage() {
-  const supabase = createClient();
+export default async function SignupPage() {
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+    const supabase = await createClient();
 
-  async function handleSignup() {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    const {
+        data: { user }
+    } = await supabase.auth.getUser();
 
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Account created!");
+    if(user) {
+        redirect("/dashboard");
     }
-  }
 
-  return (
-    <div>
-      <h1>Create Account</h1>
+    return (
 
-      <input
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+        <main className="relative flex min-h-screen items-center justify-center bg-zinc-950 px-6 text-white">
+            
+            <AuthBackground />
+            <AuthCard title="Create your account" subtitle="Start learning smarter with AI">
 
-      <input
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <button onClick={handleSignup}>
-        Sign Up
-      </button>
-    </div>
-  );
+                <SignupForm />
+            </AuthCard>
+        </main>
+    )
 }
