@@ -58,6 +58,19 @@ export default function StudyPage() {
     loadCards();
   }, []);
 
+  useEffect(() => {
+
+    function handleKeyDown(event: KeyboardEvent) {
+        if(event.code === "Space") {
+            setShowAnswer(true)
+        }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [])
+
   if (cards.length === 0) {
     return (
         <main className="mx-auto max-w-3xl p-8">
@@ -172,13 +185,15 @@ export default function StudyPage() {
     <main className="mx-auto max-w-4xl p-8">
         <div className="mb-8">
 
+            <p className="text-zinc-400">
+                Deckify Learning Session
+            </p>
+
             <h1 className="text-3xl font-bold">
-                Study Mode
+                Title
             </h1>
 
-            <p className="mt-2 text-zinc-400">
-                {currentIndex + 1} / {cards.length} cards
-            </p>
+            
         </div>
 
         <Progress
@@ -193,6 +208,7 @@ export default function StudyPage() {
                     ? card.back
                     : card.front
             }
+            showAnswer={showAnswer}
         />
 
         {!showAnswer ? (

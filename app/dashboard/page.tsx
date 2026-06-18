@@ -1,87 +1,167 @@
 import Navbar from "@/components/ui/Navbar";
+import ContinueLearning from "@/components/ui/dashboard/ContinueLearning";
+import CreateDeckCard from "@/components/ui/dashboard/CreateDeckCard";
+import DashboardStats from "@/components/ui/dashboard/DashboardStats";
+import DeckCard from "@/components/ui/dashboard/DeckCard";
+
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+
+export default async function DashboardPage(){
+
+    const supabase = await createClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if(!user) {
+        redirect("/login");
+    }
+
+return (
+
+<main className="min-h-screen bg-zinc-950 text-white">
+    <div className="mx-auto max-w-7xl px-8 pb-20">
+
+<Navbar />
 
 
-export default function DashboardPage() {
 
-  return (
-
-    <main className="mx-auto max-w-6xl px-8">
-
-      <Navbar />
-
-
-      <section className="mt-10">
-
-        <h1 className="text-4xl font-bold">
-          Welcome back 👋
-        </h1>
+<section
+className="
+mt-12
+"
+>
 
 
-        <p className="mt-2 text-zinc-400">
-          Continue building your knowledge.
-        </p>
+<h1
+className="
+text-5xl
+font-black
+tracking-tight
+"
+>
+Welcome back 👋
+</h1>
+
+<p className="mt-3 text-lg text-zinc-400">
+    { user.email }
+</p>
 
 
-        <div className="mb-10 rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-
-          <p className="text-zinc-400">
-            Current Streak
-          </p>
-          
-          <h2 className="mt-2 text-4xl font-bold">
-            🔥 7 days
-          </h2>
-
-        </div>
+<p
+className="
+mt-3
+text-lg
+text-zinc-400
+"
+>
+You have 18 cards waiting for review.
+</p>
 
 
-      </section>
+
+<DashboardStats />
 
 
-      <section className="mt-12">
+</section>
 
 
-        <div className="flex justify-between">
-
-          <h2 className="text-2xl font-semibold">
-            Continue Learning
-          </h2>
 
 
-          <button
-            className="
-            rounded-xl
-            bg-green-500
-            px-5
-            py-3
-            font-medium
-            text-black
-            hover:bg-green-400
-            "
-          >
-            + New Deck
-          </button>
+<ContinueLearning />
 
 
-        </div>
 
 
-        <div className="mt-20 text-center">
-
-            <h2 className="text-2xl font-bold">
-                No decks yet
-            </h2>
-
-            <p className="mt-3 text-zinc-400">
-                Create your first deck and start learning
-            </p>
-        </div>
+<section
+className="
+mt-16
+"
+>
 
 
-      </section>
+<div
+className="
+flex
+items-center
+justify-between
+"
+>
 
 
-    </main>
+<h2
+className="
+text-3xl
+font-bold
+"
+>
+My Decks
+</h2>
 
-  );
+
+
+</div>
+
+
+
+
+<div
+className="
+mt-8
+grid
+gap-6
+md:grid-cols-2
+lg:grid-cols-3
+"
+>
+
+
+<DeckCard
+
+id="1"
+
+title="Biology Midterm"
+
+due={18}
+
+cards={120}
+
+progress={84}
+
+/>
+
+
+<DeckCard
+
+id="2"
+
+title="French Vocabulary"
+
+due={12}
+
+cards={250}
+
+progress={62}
+
+/>
+
+
+
+<CreateDeckCard />
+
+
+</div>
+
+
+
+</section>
+
+ </div>
+
+</main>
+
+)
+
 }
