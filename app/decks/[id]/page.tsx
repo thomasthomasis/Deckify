@@ -30,7 +30,8 @@ export default async function DeckPage({ params }: Props) {
       cards(
         id,
         front,
-        back
+        back,
+        card_reviews(*)
       )
     `,
     )

@@ -17,10 +17,10 @@ export default function StudyControls({ cardReview, onNext }: Props) {
   }
 
   return (
-    <div className="mt-8 grid grid-cols-4 gap-3">
-      <p className="mb-4 text-center text-sm text-zinc-500">Press 1-4 to rate</p>
+    <div className="relative mt-8">
 
-      <button
+        <div className="grid grid-cols-4 gap-3">
+            <button
         onClick={() => handleRating('again')}
         className="rounded-xl bg-emerald-500/20 px-4 py-3 text-emerald-400 transition hover:-translate-y-1 hover:bg-emerald-500/30"
       >
@@ -47,6 +47,11 @@ export default function StudyControls({ cardReview, onNext }: Props) {
       >
         Easy
       </button>
+        </div>
+
+        <p className="absolute -bottom-8 left-0 right-0 text-center text-xs text-zinc-500">
+            Press 1-4 to rate
+        </p>
     </div>
   );
 }

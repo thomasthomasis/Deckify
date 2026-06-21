@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import Flashcard from '@/components/ui/study/Flashcard';
+import Link from 'next/link';
 
 interface Props {
   params: Promise<{
@@ -31,33 +32,52 @@ export default async function StudyPage({ params }: Props) {
     `,
     )
     .eq('deck_id', deckId)
-    .eq('card_reviews.user_id', user.id)
-    .lte('card_reviews.next_review', new Date().toISOString());
 
   const cards = data
-    ?.filter((card) => {
-      const review = card.card_reviews[0];
+    ?.filter((card)=>{
 
-      return !review.next_review || new Date(review.next_review) <= new Date();
+      const review = card.card_reviews?.[0];
+
+
+      if (!review) {
+
+        return true;
+
+      }
+
+
+      return new Date(review.next_review) <= new Date();
+
+
     })
-    .map((card) => ({
+    .map((card)=>({
+
       id: card.id,
 
       front: card.front,
 
       back: card.back,
 
-      review: card.card_reviews[0],
-    }));
+      review: card.card_reviews?.[0] ?? null,
 
-  console.log('RAW CARDS:', cards);
+    })) ?? [];
+
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-3xl">
+        <Link
+            href={`/decks/${deckId}`}
+            className="inline-flex items-center text-sm text-zinc-400 transition hover:text-white mb-4"
+        >
+            ← Back to Deck
+        </Link>
+
         <h1 className="text-3xl font-bold">Study Session</h1>
 
-        <p className="mt-2 text-zinc-400">{cards?.length ?? 0} cards remaining</p>
+       <p className="mt-2 text-zinc-400">
+            {cards.length} cards ready to review
+        </p>
 
         {cards && cards.length > 0 ? (
           <Flashcard cards={cards} />
@@ -65,7 +85,11 @@ export default async function StudyPage({ params }: Props) {
           <div className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
             <h2 className="text-2xl font-bold">🎉 All caught up!</h2>
 
-            <p className="mt-2 text-zinc-400">No cards are due right now.</p>
+            <p className="mt-3 text-zinc-400">
+                You have no cards due right now.
+                Come back later for your next review.
+              </p>
+
           </div>
         )}
       </div>
