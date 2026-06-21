@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { createClient } from "@/lib/supabase/client";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { createClient } from '@/lib/supabase/client';
+import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 export default function NewCardPage() {
   const supabase = createClient();
@@ -11,19 +12,18 @@ export default function NewCardPage() {
 
   const deckId = params.id as string;
 
-  const [front, setFront] = useState("");
-  const [back, setBack] = useState("");
+  const [front, setFront] = useState('');
+  const [back, setBack] = useState('');
 
   async function handleCreateCard() {
-
     const {
-        data: { user },
+      data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) return;
-    
+
     const { data: newCard, error } = await supabase
-      .from("cards")
+      .from('cards')
       .insert({
         deck_id: deckId,
         front,
@@ -32,16 +32,14 @@ export default function NewCardPage() {
       .select()
       .single();
 
-    await supabase
-      .from("card_reviews")
-      .insert({
-        user_id: user.id,
-        card_id: newCard.id,
-        next_review: new Date().toISOString(),
-      });
+    await supabase.from('card_reviews').insert({
+      user_id: user.id,
+      card_id: newCard.id,
+      next_review: new Date().toISOString(),
+    });
 
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       return;
     }
 
@@ -52,21 +50,11 @@ export default function NewCardPage() {
     <div>
       <h1>Add Card</h1>
 
-      <input
-        placeholder="Question"
-        value={front}
-        onChange={(e) => setFront(e.target.value)}
-      />
+      <input placeholder="Question" value={front} onChange={(e) => setFront(e.target.value)} />
 
-      <textarea
-        placeholder="Answer"
-        value={back}
-        onChange={(e) => setBack(e.target.value)}
-      />
+      <textarea placeholder="Answer" value={back} onChange={(e) => setBack(e.target.value)} />
 
-      <button onClick={handleCreateCard}>
-        Create Card
-      </button>
+      <button onClick={handleCreateCard}>Create Card</button>
     </div>
   );
 }

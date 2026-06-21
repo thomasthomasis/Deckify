@@ -1,129 +1,32 @@
-import Link from "next/link";
-
+import Link from 'next/link';
 
 interface Props {
-
-id:string;
-
-title:string;
-
-due:number;
-
-cards:number;
-
-progress:number;
-
+  deck: any;
+  reviews: any[];
 }
 
+export default function DeckCard({ deck, reviews }: Props) {
+  const totalCards = deck?.cards?.length ?? 0;
+  const dueCards = reviews?.filter((review) => review.cards.deck_id === deck.id).length ?? 0;
 
-export default function DeckCard({
-id,
-title,
-due,
-cards,
-progress
-}:Props){
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 transition hover:-translate-y-1">
+      <h2 className="text-xl font-bold">{deck.title}</h2>
 
+      <p className="mt-2 text-zinc-400">{totalCards} cards</p>
 
-return (
+      <div className="mt-5">
+        <p className="text-sm text-zinc-400">Due today</p>
 
-<Link
+        <p className="text-3xl font-bold">🔥 {dueCards}</p>
+      </div>
 
-href={`/decks/${id}`}
-
-className="
-group
-rounded-3xl
-border
-border-white/10
-bg-white/5
-p-6
-transition-all
-duration-300
-hover:-translate-y-2
-hover:border-emerald-500/50
-"
-
->
-
-
-<h3
-className="
-text-xl
-font-semibold
-"
->
-{title}
-</h3>
-
-
-
-<div
-className="
-mt-4
-flex
-justify-between
-text-sm
-text-zinc-400
-"
->
-
-<span>
-{due} due
-</span>
-
-
-<span>
-{cards} cards
-</span>
-
-
-</div>
-
-
-
-<div
-className="
-mt-5
-h-2
-rounded-full
-bg-zinc-800
-overflow-hidden
-"
->
-
-<div
-
-className="
-h-full
-bg-emerald-500
-"
-
-style={{
-width:`${progress}%`
-}}
-
-/>
-
-
-</div>
-
-
-
-<p
-className="
-mt-3
-text-sm
-text-zinc-500
-"
->
-{progress}% mastered
-</p>
-
-
-</Link>
-
-
-)
-
+      <Link
+        href={`/study/${deck.id}`}
+        className="mt-6 inline-block rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-black transition hover:bg-emerald-400"
+      >
+        Continue Studying
+      </Link>
+    </div>
+  );
 }

@@ -1,43 +1,30 @@
-"use client";
+'use client';
 
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from '@/lib/supabase/client';
 
-import Link from "next/link";
+import Link from 'next/link';
 
 export default function Navbar() {
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
 
-    async function handleLogout() {
+    window.location.href = '/';
+  }
 
-        const supabase = createClient();
-        await supabase.auth.signOut();
+  return (
+    <nav className="flex items-center justify-between py-6">
+      <Link href="/dashboard" className="text-2xl font-bold">
+        Deckify
+      </Link>
 
-        window.location.href = "/";
-    }
+      <div className="flex gap-6 text-zinc-400">
+        <Link href="/dashboard">Dashboard</Link>
 
-    return (
-        <nav className="flex items-center justify-between py-6">
+        <Link href="/profile">Profile</Link>
 
-            <Link
-                href="/dashboard"
-                className="text-2xl font-bold"
-            >
-                Deckify
-            </Link>
-
-            <div className="flex gap-6 text-zinc-400">
-
-                <Link href="/dashboard">
-                    Dashboard
-                </Link>
-
-                <Link href="/profile">
-                    Profile
-                </Link>
-
-                <button onClick={handleLogout}>
-                    Logout
-                </button>
-            </div>
-        </nav>
-    )
+        <button onClick={handleLogout}>Logout</button>
+      </div>
+    </nav>
+  );
 }

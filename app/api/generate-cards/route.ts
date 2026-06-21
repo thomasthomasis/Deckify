@@ -1,24 +1,21 @@
-import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
 
 const openai = new OpenAI({
-    apiKey: process.env.OPEN_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 export async function POST(request: Request) {
-    
-    try {
-        const { notes, difficulty, cardCount } = await request.json();
+  try {
+    const { notes, difficulty, cardCount } = await request.json();
 
-        const response = await openai.chat.completions.create({
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4.1-mini',
 
-            model: "gpt-4.1-mini",
-
-            messages: [
-                {
-                    role: "system",
-                    content:
-                    `
+      messages: [
+        {
+          role: 'system',
+          content: `
                     You are an expert flashcard creator.
 
                     Create ${cardCount} flashcards.
@@ -50,38 +47,33 @@ export async function POST(request: Request) {
                             }
                         ]
                     }
-                    `
-                },
+                    `,
+        },
 
-                {
-                    role: "user",
-                    content: notes,
-                }
-            ],
+        {
+          role: 'user',
+          content: notes,
+        },
+      ],
 
-            response_format: {
-                type: "json_object",
-            }
-        });
+      response_format: {
+        type: 'json_object',
+      },
+    });
 
-        const cards =
-            JSON.parse(
-                response.choices[0].message.content ?? "{}"
-            );
+    const cards = JSON.parse(response.choices[0].message.content ?? '{}');
 
-        return NextResponse.json(cards);
-    }
-    catch(error) {
-        console.error("AI ERROR:", error);
+    return NextResponse.json(cards);
+  } catch (error) {
+    console.error('AI ERROR:', error);
 
-        return NextResponse.json(
-            {
-                error:
-                    error instanceof Error ? error.message : "Unkown error"
-            },
-            {
-                status: 500
-            }
-        );
-    }
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Unkown error',
+      },
+      {
+        status: 500,
+      },
+    );
+  }
 }
