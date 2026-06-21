@@ -26,7 +26,7 @@ export default async function DashboardPage() {
 
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
-  const { data: decks } = await supabase.from('decks').select(`*, cards(id)`).eq('user_id', user.id);
+  const { data: decks } = await supabase.from('decks').select(`id, title, cards(id)`).eq('user_id', user.id);
 
   console.log('Decks:', decks);
 

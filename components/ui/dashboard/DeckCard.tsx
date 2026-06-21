@@ -48,7 +48,7 @@ export default function DeckCard({
       </div>
 
       <Link
-        href={`/study/${id}`}
+        href={`/decks/${id}`}
         className="mt-6 block w-full rounded-xl bg-white/10 py-3 text-center font-medium transition hover:bg-emerald-500 hover:text-black"
       >
         Continue →

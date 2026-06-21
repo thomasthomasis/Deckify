@@ -2,13 +2,15 @@ import { createClient } from '@/lib/supabase/server';
 import Flashcard from '@/components/ui/study/Flashcard';
 
 interface Props {
-  params: {
+  params: Promise<{
     deckId: string;
-  };
+  }>;
 }
 
 export default async function StudyPage({ params }: Props) {
   const supabase = await createClient();
+
+    const { deckId } = await params;
 
   const {
     data: { user },
@@ -22,16 +24,23 @@ export default async function StudyPage({ params }: Props) {
     .from('cards')
     .select(
       `
-        *,
-        card_reviews!inner(*)
+        id,
+        front,
+        back,
+        card_reviews(*)
     `,
     )
-    .eq('deck_id', params.deckId)
+    .eq('deck_id', deckId)
     .eq('card_reviews.user_id', user.id)
     .lte('card_reviews.next_review', new Date().toISOString());
 
-  const cards =
-    data?.map((card) => ({
+  const cards = data
+    ?.filter((card) => {
+      const review = card.card_reviews[0];
+
+      return !review.next_review || new Date(review.next_review) <= new Date();
+    })
+    .map((card) => ({
       id: card.id,
 
       front: card.front,
@@ -39,7 +48,9 @@ export default async function StudyPage({ params }: Props) {
       back: card.back,
 
       review: card.card_reviews[0],
-    })) ?? [];
+    }));
+
+  console.log('RAW CARDS:', cards);
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
