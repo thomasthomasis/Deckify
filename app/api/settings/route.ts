@@ -19,17 +19,26 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const { displayName } = await request.json();
+  const { dailyGoal, remindersEnabled } = await request.json();
 
   const { error } = await supabase
-    .from('profiles')
+    .from('user_settings')
     .update({
-      display_name: displayName,
+      daily_goal: dailyGoal,
+      reminders_enabled: remindersEnabled,
+      updated_at: new Date(),
     })
-    .eq('id', user.id);
+    .eq('user_id', user.id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error.message,
+      },
+      {
+        status: 500,
+      },
+    );
   }
 
   return NextResponse.json({

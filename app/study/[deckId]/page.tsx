@@ -11,7 +11,7 @@ interface Props {
 export default async function StudyPage({ params }: Props) {
   const supabase = await createClient();
 
-    const { deckId } = await params;
+  const { deckId } = await params;
 
   const {
     data: { user },
@@ -31,53 +31,42 @@ export default async function StudyPage({ params }: Props) {
         card_reviews(*)
     `,
     )
-    .eq('deck_id', deckId)
+    .eq('deck_id', deckId);
 
-  const cards = data
-    ?.filter((card)=>{
+  const cards =
+    data
+      ?.filter((card) => {
+        const review = card.card_reviews?.[0];
 
-      const review = card.card_reviews?.[0];
+        if (!review) {
+          return true;
+        }
 
+        return new Date(review.next_review) <= new Date();
+      })
+      .map((card) => ({
+        id: card.id,
 
-      if (!review) {
+        front: card.front,
 
-        return true;
+        back: card.back,
 
-      }
-
-
-      return new Date(review.next_review) <= new Date();
-
-
-    })
-    .map((card)=>({
-
-      id: card.id,
-
-      front: card.front,
-
-      back: card.back,
-
-      review: card.card_reviews?.[0] ?? null,
-
-    })) ?? [];
-
+        review: card.card_reviews?.[0] ?? null,
+      })) ?? [];
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-3xl">
         <Link
-            href={`/decks/${deckId}`}
-            className="inline-flex items-center text-sm text-zinc-400 transition hover:text-white mb-4"
+          href={`/decks/${deckId}`}
+          className="mb-4 inline-flex items-center text-sm text-zinc-400 transition hover:text-white"
         >
-            ← Back to Deck
+          ← Back to Deck
         </Link>
 
         <h1 className="text-3xl font-bold">Study Session</h1>
 
-       <p className="mt-2 text-zinc-400">
-            {cards.length} cards ready to review
-        </p>
+        <p className="mt-2 text-zinc-400">{cards.length} cards ready to review</p>
 
         {cards && cards.length > 0 ? (
           <Flashcard cards={cards} />
@@ -85,11 +74,7 @@ export default async function StudyPage({ params }: Props) {
           <div className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
             <h2 className="text-2xl font-bold">🎉 All caught up!</h2>
 
-            <p className="mt-3 text-zinc-400">
-                You have no cards due right now.
-                Come back later for your next review.
-              </p>
-
+            <p className="mt-3 text-zinc-400">You have no cards due right now. Come back later for your next review.</p>
           </div>
         )}
       </div>
