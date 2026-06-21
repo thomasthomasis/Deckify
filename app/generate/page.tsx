@@ -19,7 +19,7 @@ export default function GeneratePage() {
 
   async function generateCards() {
     if (notes.trim().length < 100) {
-      toast.error("Please enter more study material. Add at least a paragraph of notes.");
+      toast.error('Please enter more study material. Add at least a paragraph of notes.');
       return;
     }
 
@@ -47,7 +47,7 @@ export default function GeneratePage() {
     console.log(data);
 
     if (!data.flashcards) {
-      toast.error("No flashcards were generated.");
+      toast.error('No flashcards were generated.');
       return;
     }
 
@@ -62,7 +62,7 @@ export default function GeneratePage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      toast.error("You must be logged in!")
+      toast.error('You must be logged in!');
       return;
     }
 

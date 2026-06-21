@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import FlashcardEditor from './FlashcardEditor';
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { createDeck } from "@/lib/decks/createDeck";
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { createDeck } from '@/lib/decks/createDeck';
 import { toast } from 'sonner';
 
 interface Card {
@@ -13,9 +13,8 @@ interface Card {
 }
 
 export default function AIDeckForm() {
-
-    const supabase = createClient();
-    const router = useRouter();
+  const supabase = createClient();
+  const router = useRouter();
 
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
@@ -40,7 +39,7 @@ export default function AIDeckForm() {
 
   async function generateCards() {
     if (!notes.trim()) {
-      toast.error("Please add some notes first");
+      toast.error('Please add some notes first');
       return;
     }
 
@@ -70,51 +69,46 @@ export default function AIDeckForm() {
     } catch (error) {
       console.error(error);
 
-      toast.error("Something went wrong generating cards");
+      toast.error('Something went wrong generating cards');
     } finally {
       setLoading(false);
     }
   }
 
   async function saveDeck() {
-
-    if(!title.trim()) {
-        toast.error("Please enter a deck title");
-        return;
+    if (!title.trim()) {
+      toast.error('Please enter a deck title');
+      return;
     }
 
-    if(cards.length === 0) {
-        toast.error("No cards generated");
-        return;
+    if (cards.length === 0) {
+      toast.error('No cards generated');
+      return;
     }
 
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-        const {
-            data: {
-                user,
-            },
-        } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('You must be logged in');
+        return;
+      }
 
-        if(!user) {
-            toast.error("You must be logged in");
-            return;
-        }
+      await createDeck({
+        userId: user.id,
+        title,
+        cards,
+        creationMethod: 'ai',
+      });
 
-        await createDeck({
-            userId: user.id,
-            title,
-            cards,
-            creationMethod: "ai",
-        });
+      toast.success('Deck created successfully!');
 
-        toast.success("Deck created successfully!");
-
-        router.push("/dashboard");
-    } 
-    catch(error) {
-        console.error(error);
-        toast.error("Failed to create deck");
+      router.push('/dashboard');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to create deck');
     }
   }
 

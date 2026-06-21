@@ -5,8 +5,10 @@ import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import GoogleButton from '@/components/ui/auth/GoogleButton';
 
 export default function LoginForm() {
+  const supabase = createClient();
   const router = useRouter();
 
   const [email, setEmail] = useState('');
@@ -35,6 +37,15 @@ export default function LoginForm() {
     setLoading(false);
   }
 
+  async function handleGoogleLogin() {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  }
+
   return (
     <form
       onSubmit={(e) => {
@@ -43,6 +54,16 @@ export default function LoginForm() {
       }}
       className="space-y-5"
     >
+      <GoogleButton />
+
+      <div className="my-6 flex items-center gap-4">
+        <div className="h-px flex-1 bg-white/10" />
+
+        <span className="text-sm text-zinc-500">OR</span>
+
+        <div className="h-px flex-1 bg-white/10" />
+      </div>
+
       <input
         className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none focus:border-emerald-500"
         required
@@ -59,6 +80,12 @@ export default function LoginForm() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
+
+      <div className="flex justify-end">
+        <Link href="/forgot-password" className="text-sm text-zinc-400 transition hover:text-white">
+          Forgot password?
+        </Link>
+      </div>
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 

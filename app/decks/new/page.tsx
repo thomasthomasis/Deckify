@@ -16,7 +16,7 @@ export default function NewDeckPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      toast.error("Please log in");
+      toast.error('Please log in');
       return;
     }
 
@@ -31,7 +31,7 @@ export default function NewDeckPage() {
       console.error(error);
       toast.error(error.message);
     } else {
-      toast.success("Deck created!");
+      toast.success('Deck created!');
     }
   }
 

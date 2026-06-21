@@ -1,7 +1,7 @@
 import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
 import './globals.css';
-import AppToaster from "@/components/ui/toaster";
+import AppToaster from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'Deckify',
@@ -13,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={GeistSans.className}>
         {children}
-        <AppToaster />  
+        <AppToaster />
       </body>
     </html>
   );

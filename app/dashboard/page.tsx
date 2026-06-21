@@ -62,23 +62,23 @@ export default async function DashboardPage() {
         {/* Decks */}
 
         <section className="mt-14">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold">Continue Learning</h2>
 
               <p className="mt-1 text-zinc-400">Pick up where you left off.</p>
-
-              <Link
-                href="/create"
-                className="rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-black hover:bg-emerald-400"
-              >
-                + New Deck
-              </Link>
             </div>
 
-            <div className="mt-8">
-              <DeckList decks={decks ?? []} reviews={reviews ?? []} />
-            </div>
+            <Link
+              href="/create"
+              className="inline-flex w-fit items-center rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-black transition hover:bg-emerald-400"
+            >
+              + New Deck
+            </Link>
+          </div>
+
+          <div className="mt-8">
+            <DeckList decks={decks ?? []} reviews={reviews ?? []} />
           </div>
         </section>
       </div>

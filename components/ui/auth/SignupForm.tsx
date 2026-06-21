@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import GoogleButton from '@/components/ui/auth/GoogleButton';
 
 export default function SignupForm() {
   const router = useRouter();
@@ -44,6 +45,15 @@ export default function SignupForm() {
       }}
       className="space-y-5"
     >
+      <GoogleButton />
+
+      <div className="my-6 flex items-center gap-4">
+        <div className="h-px flex-1 bg-white/10" />
+
+        <span className="text-sm text-zinc-500">OR</span>
+
+        <div className="h-px flex-1 bg-white/10" />
+      </div>
       <input
         className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white transition outline-none placeholder:text-zinc-500 focus:border-emerald-500"
         required
