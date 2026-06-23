@@ -2,10 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-import { createClient } from '@/lib/supabase/client';
-import { createDeck } from '@/lib/decks/createDeck';
-
+import { createDeck } from '@/app/actions/decks';
 import FlashcardEditor from './FlashcardEditor';
 import { toast } from 'sonner';
 
@@ -15,20 +12,20 @@ interface Card {
 }
 
 export default function ManualDeckForm() {
-  const supabase = createClient();
 
   const router = useRouter();
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const [title, setTitle] = useState('');
-
+  const [description, setDescription] = useState('');
   const [cards, setCards] = useState<Card[]>([
     {
       front: '',
       back: '',
     },
   ]);
+  const [isPublic, setIsPublic] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
@@ -65,45 +62,48 @@ export default function ManualDeckForm() {
   }
 
   async function handleCreateDeck() {
-    if (!title.trim()) {
-      toast.error('Please enter a deck title');
+
+    if(!title.trim()) {
+      toast.error("Please enter a deck title");
       return;
     }
 
-    const invalidCards = cards.some((card) => !card.front.trim() || !card.back.trim());
+     const invalidCard = cards.some(
+      (card) =>
+        !card.front.trim() ||
+        !card.back.trim()
+    );
 
-    if (invalidCards) {
-      toast.error('Please complete all cards');
+
+    if (invalidCard) {
+      toast.error(
+        "Every card needs a front and back"
+      );
       return;
     }
 
     setLoading(true);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        return;
-      }
-
-      await createDeck({
-        userId: user.id,
-
-        title,
-
-        cards,
-
-        creationMethod: 'manual',
+      
+      const deck = await createDeck({
+        title, description, cards, is_public:isPublic, creationMethod:"manual",
       });
 
-      router.push('/dashboard');
-    } catch (error) {
+      toast.success("Deck created!");
+      router.refresh();
+      router.push(`/decks/${deck.id}`);
+    }
+    catch(error) {
       console.error(error);
 
-      toast.error('Failed to create deck');
-    } finally {
+      toast.error(
+        error instanceof Error
+        ? error.message
+        : "Failed to create deck"
+      );
+    }
+    finally {
       setLoading(false);
     }
   }
@@ -119,6 +119,35 @@ export default function ManualDeckForm() {
           placeholder="Example: French Vocabulary"
           className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition outline-none focus:border-emerald-400"
         />
+      </div>
+
+      <div>
+        <label className="text-sm text-zinc-400">Deck description</label>
+
+        <textarea
+          value={description}
+          onChange={(e) =>
+            setDescription(e.target.value)
+          }
+          rows={3}
+          placeholder="Describe your deck..."
+          className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition outline-none focus:border-emerald-400"
+        />
+      </div>
+
+      <div>
+        <label className="text-sm text-zinc-400">Deck Visibility</label>
+
+        <label className="mt-2 flex w-full cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition hover:bg-white/10">
+          <input
+            type="checkbox"
+            checked={isPublic}
+            onChange={(e) => setIsPublic(e.target.checked)}
+            className="h-5 w-5 rounded border-white/20 bg-white/5 text-emerald-400 focus:ring-emerald-400"
+          />
+
+          <span className="text-sm text-zinc-200">Make this deck public</span>
+        </label>
       </div>
 
       <div className="space-y-6">

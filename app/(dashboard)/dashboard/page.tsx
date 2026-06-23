@@ -1,4 +1,3 @@
-import Navbar from '@/components/ui/Navbar';
 import DashboardStats from '@/components/ui/dashboard/DashboardStats';
 import DeckList from '@/components/ui/dashboard/DeckList';
 import Link from 'next/link';
@@ -41,8 +40,6 @@ export default async function DashboardPage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-7xl px-8 pb-20">
-        <Navbar />
-
         {/* Greeting */}
 
         <section className="mt-12">

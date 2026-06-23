@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import SaveDeckButton from '@/components/ui/deck/SaveDeckButton';
+import DeleteDeckButton from '@/components/ui/deck/DeleteDeckButton';
 
 interface Props {
   params: Promise<{
@@ -24,19 +26,30 @@ export default async function DeckPage({ params }: Props) {
     .from('decks')
     .select(
       `
-      id,
-      title,
-      created_at,
+      *,
+      profiles(
+        display_name
+      ),
       cards(
         id,
         front,
-        back,
-        card_reviews(*)
+        back
       )
     `,
     )
     .eq('id', id)
     .single();
+
+  const { data: savedDeck } = await supabase
+    .from('saved_decks')
+    .select('id')
+    .eq('deck_id', deck.id)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  const isSaved = !!savedDeck;
+
+  const isOwner = user?.id === deck?.user_id;
 
   if (!deck) {
     return (
@@ -46,13 +59,6 @@ export default async function DeckPage({ params }: Props) {
             <h1 className="text-3xl font-bold">Deck not found 😕</h1>
 
             <p className="mt-3 text-zinc-400">This deck may have been deleted or you may not have access to it.</p>
-
-            <Link
-              href="/dashboard"
-              className="mt-6 inline-flex rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-black transition hover:bg-emerald-400"
-            >
-              Back to Dashboard
-            </Link>
           </div>
         </div>
       </main>
@@ -67,29 +73,39 @@ export default async function DeckPage({ params }: Props) {
     .eq('user_id', user.id)
     .in(
       'card_id',
-      deck.cards.map((card) => card.id),
+      deck.cards.map((card: any) => card.id),
     )
     .lte('next_review', new Date().toISOString());
 
   const dueCount = reviews?.length ?? 0;
 
+  if (!deck.is_public && !isOwner) {
+    return <div>Deck not found</div>;
+  }
+
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
-      <div className="mx-auto max-w-5xl">
-        <Link href="/dashboard" className="text-sm text-zinc-400 transition hover:text-white">
-          ← Back to Dashboard
-        </Link>
-
+      <div className="mx-auto max-w-6xl">
         <section className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div>
+            <div className="flex flex-col">
               <h1 className="text-4xl font-bold">{deck.title}</h1>
 
               <div className="mt-4 flex gap-4 text-zinc-400">
                 <span>📚 {cardCount} cards</span>
-
                 <span>🔥 {dueCount} due</span>
               </div>
+
+              {isOwner ? (
+                <Link
+                  href={`/decks/${deck.id}/edit`}
+                  className="rounded-xl border border-white/10 px-5 py-3 font-semibold mt-5"
+                >
+                  Edit Deck
+                </Link>
+              ) : (
+                <SaveDeckButton deckId={deck.id} initiallySaved={isSaved} />
+              )}
             </div>
 
             <Link
@@ -105,7 +121,7 @@ export default async function DeckPage({ params }: Props) {
           <h2 className="text-2xl font-bold">Cards</h2>
 
           <div className="mt-6 space-y-4">
-            {deck.cards.map((card) => (
+            {(deck.cards ?? []).map((card: any) => (
               <div key={card.id} className="rounded-2xl border border-white/10 bg-white/5 p-5">
                 <p className="font-semibold">{card.front}</p>
 

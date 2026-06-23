@@ -1,6 +1,7 @@
 'use client';
 
 import { createClient } from '@/lib/supabase/client';
+import GoogleIcon from '@/components/ui/GoogleIcon';
 
 export default function GoogleButton() {
   const supabase = createClient();
@@ -18,8 +19,9 @@ export default function GoogleButton() {
   return (
     <button
       onClick={handleGoogleLogin}
-      className="w-full rounded-xl border border-white/10 bg-white/5 px-5 py-3 font-medium transition hover:bg-white/10"
+      className="flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white px-5 py-3 font-semibold text-black transition hover:bg-zinc-200"
     >
+      <GoogleIcon />
       Continue with Google
     </button>
   );

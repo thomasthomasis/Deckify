@@ -44,11 +44,9 @@ export default async function ProfilePage() {
   console.log(stats);
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
-      <div className="mx-auto max-w-4xl">
-        <Link href="/dashboard" className="text-sm text-zinc-400 transition hover:text-white">
-          ← Back to Dashboard
-        </Link>
+    <main className="min-h-screen bg-zinc-950 px-6 py-0 text-white">
+      <div className="mx-auto max-w-6xl">
+        <h1 className="mt-8 text-4xl font-bold">Profile</h1>
 
         <div className="mt-8 space-y-8">
           <ProfileHeader displayName={profile?.display_name} email={user?.email} />

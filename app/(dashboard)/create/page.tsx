@@ -3,18 +3,12 @@ import Link from 'next/link';
 export default function CreatePage() {
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
-      <div className="mx-auto flex min-h-[calc(100vh-80px)] max-w-5xl items-center justify-center px-6">
+      <div className="mx-auto flex min-h-[calc(100vh-80px)] max-w-6xl px-6">
         <div className="w-full">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center text-sm text-zinc-400 transition hover:text-white"
-          >
-            ← Back to Dashboard
-          </Link>
 
-          <h1 className="mt-8 text-center text-4xl font-bold">Create a new deck</h1>
+          <h1 className="mt-8 text-4xl font-bold">Create a new deck</h1>
 
-          <p className="mt-3 text-center text-zinc-400">Choose how you want to create your flashcards.</p>
+          <p className="mt-3 text-zinc-400">Choose how you want to create your flashcards.</p>
 
           <div className="mt-12 grid gap-8 md:grid-cols-2">
             <Link

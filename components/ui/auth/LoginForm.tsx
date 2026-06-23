@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import GoogleButton from '@/components/ui/auth/GoogleButton';
+import GoogleIcon from '@/components/ui/GoogleIcon';
 
 export default function LoginForm() {
   const supabase = createClient();

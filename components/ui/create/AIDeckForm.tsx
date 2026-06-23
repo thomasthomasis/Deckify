@@ -17,8 +17,10 @@ export default function AIDeckForm() {
   const router = useRouter();
 
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [notes, setNotes] = useState('');
   const [amount, setAmount] = useState(10);
+  const [isPublic, setIsPublic] = useState(false);
 
   const [cards, setCards] = useState<Card[]>([]);
 
@@ -99,7 +101,9 @@ export default function AIDeckForm() {
       await createDeck({
         userId: user.id,
         title,
+        description,
         cards,
+        is_public: isPublic,
         creationMethod: 'ai',
       });
 
@@ -128,7 +132,33 @@ export default function AIDeckForm() {
           </div>
 
           <div>
-            <label className="text-sm text-zinc-400">Your notes</label>
+            <label className="text-sm text-zinc-400">Deck description</label>
+
+            <input
+              value={title}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Example: The top 100 most commonly used French words"
+              className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition outline-none focus:border-emerald-400"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm text-zinc-400">Deck Visibility</label>
+
+            <label className="mt-2 flex w-full cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition hover:bg-white/10">
+              <input
+                type="checkbox"
+                checked={isPublic}
+                onChange={(e) => setIsPublic(e.target.checked)}
+                className="h-5 w-5 rounded border-white/20 bg-white/5 text-emerald-400 focus:ring-emerald-400"
+              />
+
+              <span className="text-sm text-zinc-200">Make this deck public</span>
+            </label>
+          </div>
+
+          <div>
+            <label className="w-full text-sm text-zinc-400">Your notes</label>
 
             <textarea
               value={notes}
@@ -139,21 +169,26 @@ export default function AIDeckForm() {
             />
           </div>
 
-          <div>
+          <div className="flex flex-col">
             <label className="text-sm text-zinc-400">Number of cards</label>
 
             <select
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="mt-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3"
+              className="mt-2 w-32 cursor-pointer rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-zinc-200 transition outline-none hover:bg-white/10 focus:border-emerald-400"
             >
-              <option value={5}>5 cards</option>
-
-              <option value={10}>10 cards</option>
-
-              <option value={20}>20 cards</option>
-
-              <option value={30}>30 cards</option>
+              <option className="bg-white text-black" value={5}>
+                5 cards
+              </option>
+              <option className="bg-white text-black" value={10}>
+                10 cards
+              </option>
+              <option className="bg-white text-black" value={20}>
+                20 cards
+              </option>
+              <option className="bg-white text-black" value={30}>
+                30 cards
+              </option>
             </select>
           </div>
 
