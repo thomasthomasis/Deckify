@@ -16,32 +16,26 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  const { data: stats } = await supabase.from('user_stats').select('*').eq('user_id', user.id).single();
-
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-
-  const displayName = profile?.display_name ?? 'there';
-  const hour = new Date().getHours();
-
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-
-  const { data: decks } = await supabase.from('decks').select(`id, title, cards(id)`).eq('user_id', user.id);
-
-  console.log('Decks:', decks);
-
   const today = new Date().toISOString();
 
-  const { data: reviews } = await supabase
-    .from('card_reviews')
-    .select(`card_id, cards(deck_id)`)
-    .eq('user_id', user.id)
-    .lte('next_review', today);
+  const [statsResult, profileResult, decksResult, reviewsResult] = await Promise.all([
+    supabase.from('user_stats').select('*').eq('user_id', user.id).single(),
+    supabase.from('profiles').select('display_name').eq('id', user.id).single(),
+    supabase.from('decks').select('id, title, cards(id)').eq('user_id', user.id),
+    supabase.from('card_reviews').select('card_id, cards(deck_id)').eq('user_id', user.id).lte('next_review', today),
+  ]);
+
+  const stats = statsResult.data;
+  const displayName = profileResult.data?.display_name ?? 'there';
+  const decks = decksResult.data ?? [];
+  const reviews = reviewsResult.data ?? [];
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
       <div className="mx-auto max-w-7xl px-8 pb-20">
-        {/* Greeting */}
-
         <section className="mt-12">
           <h1 className="text-4xl font-bold">
             {greeting}, <span className="text-emerald-400">{displayName}</span> 👋
@@ -50,13 +44,9 @@ export default async function DashboardPage() {
           <p className="mt-2 text-zinc-400">Continue building your knowledge.</p>
         </section>
 
-        {/* Stats */}
-
         <section className="mt-10">
           <DashboardStats stats={stats} />
         </section>
-
-        {/* Decks */}
 
         <section className="mt-14">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -75,7 +65,7 @@ export default async function DashboardPage() {
           </div>
 
           <div className="mt-8">
-            <DeckList decks={decks ?? []} reviews={reviews ?? []} />
+            <DeckList decks={decks} reviews={reviews} />
           </div>
         </section>
       </div>

@@ -1,60 +1,30 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { completeOnboarding } from '@/app/actions/onboarding';
 
-interface Props {
-  userId: string;
-}
-
-export default function OnboardingForm({ userId }: Props) {
+export default function OnboardingForm() {
   const router = useRouter();
 
   const [name, setName] = useState('');
-
   const [loading, setLoading] = useState(false);
-
   const [error, setError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!name.trim()) {
-      setError('Please enter your name');
-
-      return;
-    }
-
     setLoading(true);
-
     setError('');
 
-    const supabase = createClient();
-
-    const { error } = await supabase
-
-      .from('profiles')
-
-      .update({
-        display_name: name,
-
-        onboarding_complete: true,
-      })
-
-      .eq('id', userId);
-
-    if (error) {
-      setError(error.message);
-
+    try {
+      await completeOnboarding(name);
+      router.push('/dashboard');
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
       setLoading(false);
-
-      return;
     }
-
-    router.push('/dashboard');
-
-    router.refresh();
   }
 
   return (
@@ -69,6 +39,7 @@ export default function OnboardingForm({ userId }: Props) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Your name"
+          maxLength={50}
           className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 transition outline-none focus:border-emerald-500"
         />
 

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { deleteDeck } from '@/app/actions/decks';
 
 interface Props {
@@ -29,13 +29,13 @@ export default function DeleteDeckButton({ deckId }: Props) {
     } catch (error) {
       console.error(error);
       toast.error('Failed to delete deck');
-    } finally {
       setLoading(false);
     }
   }
 
   return (
     <button
+      type="button"
       onClick={handleDelete}
       disabled={loading}
       className="rounded-xl border border-red-500/30 px-5 py-3 font-semibold text-red-400 transition hover:bg-red-500/10 disabled:opacity-50"

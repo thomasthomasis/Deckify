@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import LibrarySection from '@/components/ui/library/LibrarySection';
 import Link from 'next/link';
 
@@ -10,7 +11,7 @@ export default async function LibraryPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return null;
+    redirect('/login');
   }
 
   /*
@@ -61,18 +62,9 @@ export default async function LibraryPage() {
         <p className="mt-2 text-zinc-400">Your personal collection of decks.</p>
 
         <div className="mt-12 space-y-12">
-          <div>
-            <LibrarySection title="Created by You" decks={createdDecks ?? []} />
+          <LibrarySection title="Created by You" decks={createdDecks ?? []} sectionType='owned'/>
 
-            <Link
-              href="/create"
-              className="inline-flex w-fit items-center rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-black transition hover:bg-emerald-400"
-            >
-              + New Deck
-            </Link>
-          </div>
-
-          <LibrarySection title="Saved Decks" decks={savedDecks?.map((item) => item.deck) ?? []} />
+          <LibrarySection title="Saved Decks" decks={savedDecks?.map((item) => item.deck) ?? []} sectionType='saved'/>
         </div>
       </div>
     </main>

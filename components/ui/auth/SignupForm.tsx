@@ -7,6 +7,13 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import GoogleButton from '@/components/ui/auth/GoogleButton';
 
+function validatePassword(password: string): string | null {
+  if (password.length < 8) return 'Password must be at least 8 characters';
+  if (!/[A-Z]/.test(password)) return 'Password must contain an uppercase letter';
+  if (!/[0-9]/.test(password)) return 'Password must contain a number';
+  return null;
+}
+
 export default function SignupForm() {
   const router = useRouter();
 
@@ -17,15 +24,18 @@ export default function SignupForm() {
   const [error, setError] = useState('');
 
   async function signup() {
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       setError(error.message);
@@ -54,6 +64,7 @@ export default function SignupForm() {
 
         <div className="h-px flex-1 bg-white/10" />
       </div>
+
       <input
         className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white transition outline-none placeholder:text-zinc-500 focus:border-emerald-500"
         required
@@ -63,14 +74,17 @@ export default function SignupForm() {
         onChange={(e) => setEmail(e.target.value)}
       />
 
-      <input
-        className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white transition outline-none placeholder:text-zinc-500 focus:border-emerald-500"
-        required
-        placeholder="Password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+      <div>
+        <input
+          className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white transition outline-none placeholder:text-zinc-500 focus:border-emerald-500"
+          required
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <p className="mt-1 text-xs text-zinc-500">Min. 8 characters, one uppercase letter, one number</p>
+      </div>
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 

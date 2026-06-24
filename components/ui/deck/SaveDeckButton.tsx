@@ -10,8 +10,6 @@ interface Props {
 }
 
 export default function SaveDeckButton({ deckId, initiallySaved }: Props) {
-  const supabase = createClient();
-
   const [saved, setSaved] = useState(initiallySaved);
   const [loading, setLoading] = useState(false);
 
@@ -19,35 +17,37 @@ export default function SaveDeckButton({ deckId, initiallySaved }: Props) {
     setLoading(true);
 
     try {
-      if (saved) {
-        const { error } = await supabase.from('saved_decks').delete().eq('deck_id', deckId);
+      const supabase = createClient();
 
-        if (error) {
-          throw error;
-        }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast.error('You must be logged in');
+        return;
+      }
+
+      if (saved) {
+        const { error } = await supabase
+          .from('saved_decks')
+          .delete()
+          .eq('deck_id', deckId)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
 
         setSaved(false);
         toast.success('Removed from library');
       } else {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          throw new Error('Not authenticated');
-        }
-
         const { error } = await supabase.from('saved_decks').insert({
           deck_id: deckId,
           user_id: user.id,
         });
 
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         setSaved(true);
-
         toast.success('Added to library');
       }
     } catch (error) {
@@ -58,33 +58,16 @@ export default function SaveDeckButton({ deckId, initiallySaved }: Props) {
     }
   }
 
-  async function saveDeck() {
-    const response = await fetch('/api/decks/save', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        deckId,
-      }),
-    });
-
-    if (response.ok) {
-      toast.success('Deck added to your library');
-    } else {
-      toast.error('Unable to save deck');
-    }
-  }
-
   return (
     <button
+      type="button"
       onClick={toggleLibrary}
       disabled={loading}
-      className={`flex items-center gap-2 rounded-xl px-5 py-3 font-semibold transition ${
+      className={`mt-5 flex items-center gap-2 rounded-xl px-5 py-3 font-semibold transition ${
         saved
           ? 'border border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
           : 'border border-white/10 text-white hover:bg-white/10'
-      } `}
+      } disabled:opacity-50`}
     >
       {saved ? <>✓ In Library</> : <>+ Add to Library</>}
     </button>

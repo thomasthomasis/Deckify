@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { redirect, notFound } from 'next/navigation';
 import EditDeckForm from '@/components/ui/deck/EditDeckForm';
 import DeleteDeckButton from '@/components/ui/deck/DeleteDeckButton';
 
@@ -19,7 +20,7 @@ export default async function EditDeckPage({ params }: Props) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return null;
+    redirect('/login');
   }
 
   const { data: deck } = await supabase
@@ -38,29 +39,11 @@ export default async function EditDeckPage({ params }: Props) {
     .single();
 
   if (!deck) {
-    return (
-      <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
-        <div className="mx-auto max-w-5xl">
-          <h1 className="text-3xl font-bold">Deck not found</h1>
-        </div>
-      </main>
-    );
+    notFound();
   }
 
-  // Security check
-
   if (deck.user_id !== user.id) {
-    return (
-      <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
-        <div className="mx-auto max-w-5xl">
-          <h1 className="text-3xl font-bold">You cannot edit this deck</h1>
-
-          <Link href={`/decks/${deck.id}`} className="mt-5 inline-flex rounded-xl bg-white/10 px-5 py-3">
-            Back to Deck
-          </Link>
-        </div>
-      </main>
-    );
+    notFound();
   }
 
   return (

@@ -1,27 +1,53 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
+import { submitReview } from '@/app/actions/reviewActions';
+import { Rating } from '@/lib/study/algorithm';
 import StudyControls from './StudyControls';
 import StudyProgress from './StudyProgress';
 
+interface Card {
+  id: string;
+  front: string;
+  back: string;
+}
+
 interface Props {
-  cards: any[];
+  cards: Card[];
 }
 
 export default function Flashcard({ cards }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [showAnswer, setShowAnswer] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const card = cards[currentIndex];
 
   function handleNext() {
     setShowAnswer(false);
-
     setCurrentIndex((prev) => prev + 1);
   }
+
+  const handleRating = useCallback(
+    async (rating: Rating) => {
+      if (submitting || !card) return;
+
+      setSubmitting(true);
+      try {
+        await submitReview(card.id, rating);
+      } catch {
+        toast.error('Failed to save review. Please try again.');
+      } finally {
+        setSubmitting(false);
+      }
+
+      handleNext();
+    },
+    [card, submitting],
+  );
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -29,39 +55,20 @@ export default function Flashcard({ cards }: Props) {
         if (event.key === 'Enter') {
           setShowAnswer(true);
         }
-
         return;
       }
 
-      if (event.key === '1') {
-        handleRating('again');
-      }
+      if (submitting) return;
 
-      if (event.key === '2') {
-        handleRating('hard');
-      }
-
-      if (event.key === '3') {
-        handleRating('good');
-      }
-
-      if (event.key === '4') {
-        handleRating('easy');
-      }
+      if (event.key === '1') handleRating('again');
+      if (event.key === '2') handleRating('hard');
+      if (event.key === '3') handleRating('good');
+      if (event.key === '4') handleRating('easy');
     }
 
     window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [showAnswer]);
-
-  function handleRating(rating: string) {
-    console.log(rating);
-
-    handleNext();
-  }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showAnswer, submitting, handleRating]);
 
   if (!card) {
     return (
@@ -78,21 +85,10 @@ export default function Flashcard({ cards }: Props) {
       <AnimatePresence mode="wait">
         <motion.div
           key={card.id}
-          initial={{
-            opacity: 0,
-            y: 20,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          exit={{
-            opacity: 0,
-            y: -20,
-          }}
-          transition={{
-            duration: 0.25,
-          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.25 }}
           onClick={() => setShowAnswer(!showAnswer)}
           className="mt-10 cursor-pointer rounded-3xl border border-white/10 bg-white/5 p-12 text-center"
         >
@@ -102,7 +98,7 @@ export default function Flashcard({ cards }: Props) {
         </motion.div>
       </AnimatePresence>
 
-      {showAnswer && <StudyControls cardReview={card.review} onNext={handleNext} />}
+      {showAnswer && <StudyControls onRate={handleRating} />}
     </div>
   );
 }

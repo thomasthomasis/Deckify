@@ -7,18 +7,19 @@ export async function updateUserStats(userId: string, xpEarned: number) {
 
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
-  const newXP = profile.xp + xpEarned;
+  if (!profile) {
+    throw new Error(`Profile not found for user ${userId}`);
+  }
+
+  const newXP = (profile.xp ?? 0) + xpEarned;
 
   await supabase
     .from('profiles')
     .update({
       xp: newXP,
-
       level: calculateLevel(newXP),
-
-      streak: calculateStreak(profile.last_studied, profile.streak),
-
-      words_studied: profile.words_studied + 1,
+      streak: calculateStreak(profile.last_studied, profile.streak ?? 0),
+      words_studied: (profile.words_studied ?? 0) + 1,
     })
     .eq('id', userId);
 }

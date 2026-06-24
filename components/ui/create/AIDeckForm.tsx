@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import FlashcardEditor from './FlashcardEditor';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { createDeck } from '@/lib/decks/createDeck';
-import { toast } from 'sonner';
+import {useState} from "react";
+import {toast} from "sonner";
+import {useRouter} from "next/navigation";
+
+import {generateAICards} from "@/app/actions/ai";
+import { createDeck } from "@/app/actions/decks";
+import FlashcardEditor from "./FlashcardEditor";
 
 interface Card {
   front: string;
@@ -13,7 +14,6 @@ interface Card {
 }
 
 export default function AIDeckForm() {
-  const supabase = createClient();
   const router = useRouter();
 
   const [title, setTitle] = useState('');
@@ -40,42 +40,58 @@ export default function AIDeckForm() {
   }
 
   async function generateCards() {
-    if (!notes.trim()) {
-      toast.error('Please add some notes first');
-      return;
-    }
 
-    setLoading(true);
+  if (!title.trim()) {
+    toast.error("Please enter a title");
+    return;
+  }
 
-    try {
-      const response = await fetch('/api/generate-cards', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          notes,
-          amount,
-        }),
+
+  if (!notes.trim()) {
+    toast.error("Please enter notes");
+    return;
+  }
+
+
+  setLoading(true);
+
+
+  try {
+
+    const generatedCards =
+      await generateAICards({
+        notes,
+        amount,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate cards');
-      }
 
-      const data = await response.json();
+    setCards(generatedCards);
 
-      setCards(data.flashcards);
+    setGenerated(true);
 
-      setGenerated(true);
-    } catch (error) {
-      console.error(error);
 
-      toast.error('Something went wrong generating cards');
-    } finally {
-      setLoading(false);
-    }
+    toast.success(
+      "Cards generated!"
+    );
+
+
+  } catch(error) {
+
+    console.error(error);
+
+    toast.error(
+      error instanceof Error
+      ? error.message
+      : "Failed to generate cards"
+    );
+
+
+  } finally {
+
+    setLoading(false);
+
   }
+}
 
   async function saveDeck() {
     if (!title.trim()) {
@@ -88,18 +104,10 @@ export default function AIDeckForm() {
       return;
     }
 
+    setLoading(true);
+
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        toast.error('You must be logged in');
-        return;
-      }
-
-      await createDeck({
-        userId: user.id,
+      const deck = await createDeck({
         title,
         description,
         cards,
@@ -107,12 +115,15 @@ export default function AIDeckForm() {
         creationMethod: 'ai',
       });
 
-      toast.success('Deck created successfully!');
+      toast.success('Deck created!');
+      router.push(`/decks/${deck.id}`);
 
-      router.push('/dashboard');
     } catch (error) {
       console.error(error);
-      toast.error('Failed to create deck');
+      toast.error(error instanceof Error ? error.message : "Failed to create deck");
+    }
+    finally {
+      setLoading(false)
     }
   }
 
@@ -135,7 +146,7 @@ export default function AIDeckForm() {
             <label className="text-sm text-zinc-400">Deck description</label>
 
             <input
-              value={title}
+              value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Example: The top 100 most commonly used French words"
               className="mt-2 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 transition outline-none focus:border-emerald-400"

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { redirect, notFound } from 'next/navigation';
 import Flashcard from '@/components/ui/study/Flashcard';
 import Link from 'next/link';
 
@@ -18,7 +19,19 @@ export default async function StudyPage({ params }: Props) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return null;
+    redirect('/login');
+  }
+
+  const { data: deck } = await supabase.from('decks').select('id, user_id, is_public').eq('id', deckId).single();
+
+  if (!deck) {
+    notFound();
+  }
+
+  const isOwner = user.id === deck.user_id;
+
+  if (!deck.is_public && !isOwner) {
+    notFound();
   }
 
   const { data } = await supabase
@@ -46,12 +59,8 @@ export default async function StudyPage({ params }: Props) {
       })
       .map((card) => ({
         id: card.id,
-
         front: card.front,
-
         back: card.back,
-
-        review: card.card_reviews?.[0] ?? null,
       })) ?? [];
 
   return (
@@ -68,7 +77,7 @@ export default async function StudyPage({ params }: Props) {
 
         <p className="mt-2 text-zinc-400">{cards.length} cards ready to review</p>
 
-        {cards && cards.length > 0 ? (
+        {cards.length > 0 ? (
           <Flashcard cards={cards} />
         ) : (
           <div className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-10 text-center">

@@ -1,6 +1,15 @@
 export type Rating = 'again' | 'hard' | 'good' | 'easy';
 
 export function calculateNextReview(rating: Rating, review: any) {
+
+  if(!review) {
+    return {
+      interval: 1,
+      ease_factor: 2.5,
+      next_review: new Date()
+    };
+  }
+
   let { interval, repetitions, ease_factor } = review;
 
   if (rating === 'again') {

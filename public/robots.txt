@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /decks
+Disallow: /study
+Disallow: /create
+Disallow: /library
+Disallow: /profile
+Disallow: /account
+Disallow: /onboarding
+Disallow: /api
+
+Sitemap: https://deckify.app/sitemap.xml

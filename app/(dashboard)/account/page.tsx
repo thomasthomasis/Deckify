@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 
 import AccountSection from '@/components/ui/account/AccountSection';
 import PreferencesForm from '@/components/ui/account/PreferencesForm';
@@ -14,7 +15,7 @@ export default async function AccountPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return null;
+    redirect('/login');
   }
 
   const identities = user?.identities ?? [];

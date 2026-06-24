@@ -15,9 +15,8 @@ export default function ProfileForm({ displayName }: { displayName: string }) {
 
     const response = await fetch('/api/profile', {
       method: 'PATCH',
-      body: JSON.stringify({
-        displayName: name,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ displayName: name }),
     });
 
     const data = await response.json();

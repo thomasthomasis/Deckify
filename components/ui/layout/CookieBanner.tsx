@@ -1,21 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const accepted = localStorage.getItem('deckify-cookie-consent');
-
-    if (!accepted) {
+    const consent = localStorage.getItem('deckify-cookie-consent');
+    if (!consent) {
       setVisible(true);
     }
   }, []);
 
   function accept() {
-    localStorage.setItem('deckify-cookie-consent', 'true');
+    localStorage.setItem('deckify-cookie-consent', 'accepted');
+    setVisible(false);
+  }
 
+  function decline() {
+    localStorage.setItem('deckify-cookie-consent', 'declined');
     setVisible(false);
   }
 
@@ -26,17 +30,30 @@ export default function CookieBanner() {
       <h3 className="font-semibold">We use cookies</h3>
 
       <p className="mt-2 text-sm text-zinc-400">
-        Deckify uses cookies to keep you signed in, improve performance, and enhance your experience.
+        Deckify uses essential cookies to keep you signed in and improve your experience. You can decline non-essential
+        cookies.
       </p>
 
       <div className="mt-4 flex gap-3">
-        <button onClick={accept} className="rounded-xl bg-emerald-500 px-4 py-2 font-semibold text-black">
+        <button
+          type="button"
+          onClick={accept}
+          className="rounded-xl bg-emerald-500 px-4 py-2 font-semibold text-black transition hover:bg-emerald-400"
+        >
           Accept
         </button>
 
-        <a href="/legal/cookies" className="rounded-xl border border-white/10 px-4 py-2">
+        <button
+          type="button"
+          onClick={decline}
+          className="rounded-xl border border-white/10 px-4 py-2 transition hover:bg-white/5"
+        >
+          Decline
+        </button>
+
+        <Link href="/legal/cookies" className="rounded-xl border border-white/10 px-4 py-2 transition hover:bg-white/5">
           Learn More
-        </a>
+        </Link>
       </div>
     </div>
   );

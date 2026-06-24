@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import ProfileForm from '@/components/ui/profile/ProfileForm';
 import ProfileStats from '@/components/ui/profile/ProfileStats';
 import ProfileHeader from '@/components/ui/profile/ProfileHeader';
@@ -12,7 +13,7 @@ export default async function ProfilePage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return null;
+    redirect('/login');
   }
 
   const { data: profile } = await supabase
@@ -40,8 +41,6 @@ export default async function ProfilePage() {
     )
     .eq('user_id', user.id)
     .single();
-
-  console.log(stats);
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-0 text-white">

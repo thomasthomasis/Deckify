@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { redirect, notFound } from 'next/navigation';
 import SaveDeckButton from '@/components/ui/deck/SaveDeckButton';
 import DeleteDeckButton from '@/components/ui/deck/DeleteDeckButton';
 
@@ -19,7 +20,7 @@ export default async function DeckPage({ params }: Props) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return null;
+    redirect('/login');
   }
 
   const { data: deck } = await supabase
@@ -40,6 +41,16 @@ export default async function DeckPage({ params }: Props) {
     .eq('id', id)
     .single();
 
+  if (!deck) {
+    notFound();
+  }
+
+  const isOwner = user.id === deck.user_id;
+
+  if (!deck.is_public && !isOwner) {
+    notFound();
+  }
+
   const { data: savedDeck } = await supabase
     .from('saved_decks')
     .select('id')
@@ -49,22 +60,6 @@ export default async function DeckPage({ params }: Props) {
 
   const isSaved = !!savedDeck;
 
-  const isOwner = user?.id === deck?.user_id;
-
-  if (!deck) {
-    return (
-      <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
-        <div className="mx-auto flex min-h-[70vh] max-w-5xl items-center justify-center">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
-            <h1 className="text-3xl font-bold">Deck not found 😕</h1>
-
-            <p className="mt-3 text-zinc-400">This deck may have been deleted or you may not have access to it.</p>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   const cardCount = deck.cards?.length ?? 0;
 
   const { data: reviews } = await supabase
@@ -73,15 +68,11 @@ export default async function DeckPage({ params }: Props) {
     .eq('user_id', user.id)
     .in(
       'card_id',
-      deck.cards.map((card: any) => card.id),
+      deck.cards.map((card: { id: string }) => card.id),
     )
     .lte('next_review', new Date().toISOString());
 
   const dueCount = reviews?.length ?? 0;
-
-  if (!deck.is_public && !isOwner) {
-    return <div>Deck not found</div>;
-  }
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
@@ -99,7 +90,7 @@ export default async function DeckPage({ params }: Props) {
               {isOwner ? (
                 <Link
                   href={`/decks/${deck.id}/edit`}
-                  className="rounded-xl border border-white/10 px-5 py-3 font-semibold mt-5"
+                  className="mt-5 rounded-xl border border-white/10 px-5 py-3 font-semibold"
                 >
                   Edit Deck
                 </Link>
@@ -121,7 +112,7 @@ export default async function DeckPage({ params }: Props) {
           <h2 className="text-2xl font-bold">Cards</h2>
 
           <div className="mt-6 space-y-4">
-            {(deck.cards ?? []).map((card: any) => (
+            {(deck.cards ?? []).map((card: { id: string; front: string; back: string }) => (
               <div key={card.id} className="rounded-2xl border border-white/10 bg-white/5 p-5">
                 <p className="font-semibold">{card.front}</p>
 

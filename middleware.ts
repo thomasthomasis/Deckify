@@ -9,9 +9,7 @@ export async function middleware(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-
     {
       cookies: {
         getAll() {
@@ -20,12 +18,7 @@ export async function middleware(request: NextRequest) {
 
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set({
-              name,
-              value,
-              ...options,
-            });
-
+            request.cookies.set({ name, value, ...options });
             response.cookies.set(name, value, options);
           });
         },
@@ -37,9 +30,18 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const protectedRoutes = ['/dashboard', '/decks', '/study', '/generate'];
-
-  const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route));
+  const isProtectedRoute = [
+    '/dashboard',
+    '/decks',
+    '/study',
+    '/generate',
+    '/create',
+    '/library',
+    '/profile',
+    '/account',
+    '/discover',
+    '/onboarding',
+  ].some((route) => request.nextUrl.pathname.startsWith(route));
 
   if (isProtectedRoute && !user) {
     return NextResponse.redirect(new URL('/login', request.url));
@@ -49,5 +51,22 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/decks/:path*', '/study/:path*', '/generate/:path*'],
+  matcher: [
+    '/dashboard/:path*',
+    '/decks/:path*',
+    '/study/:path*',
+    '/generate/:path*',
+    '/create',
+    '/create/:path*',
+    '/library',
+    '/library/:path*',
+    '/profile',
+    '/profile/:path*',
+    '/account',
+    '/account/:path*',
+    '/discover',
+    '/discover/:path*',
+    '/onboarding',
+    '/onboarding/:path*',
+  ],
 };

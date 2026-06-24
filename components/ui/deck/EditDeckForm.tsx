@@ -116,7 +116,7 @@ export default function EditDeckForm({ deck }: Props) {
 
         <div className="mt-6 space-y-4">
           {cards.map((card, index) => (
-            <div key={index} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <div key={card.id ?? index} className="rounded-2xl border border-white/10 bg-white/5 p-5">
               <div className="mb-3 flex justify-between">
                 <p className="text-sm text-zinc-400">Card {index + 1}</p>
 

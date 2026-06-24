@@ -3,6 +3,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { createEmbedding } from '@/lib/ai/createEmbedding';
 
+const MAX_TITLE_LENGTH = 200;
+const MAX_DESCRIPTION_LENGTH = 2000;
+const MAX_CARD_FRONT_LENGTH = 1000;
+const MAX_CARD_BACK_LENGTH = 2000;
+const MAX_CARDS = 200;
+
 interface UpdateDeckInput {
   deckId: string;
   title: string;
@@ -18,34 +24,40 @@ interface UpdateDeckInput {
 interface CreateDeckProps {
   title: string;
   description: string;
-
   cards: {
     front: string;
     back: string;
   }[];
-
   is_public: boolean;
-
   creationMethod: 'ai' | 'manual';
 }
 
 export async function updateDeck({ deckId, title, description, isPublic, cards }: UpdateDeckInput) {
-
-    console.log("UPDATE CARDS:", cards);
-    
   if (!title.trim()) {
     throw new Error('Deck title is required');
+  }
+
+  if (title.length > MAX_TITLE_LENGTH) {
+    throw new Error(`Title must be ${MAX_TITLE_LENGTH} characters or fewer`);
+  }
+
+  if (description.length > MAX_DESCRIPTION_LENGTH) {
+    throw new Error(`Description must be ${MAX_DESCRIPTION_LENGTH} characters or fewer`);
+  }
+
+  if (cards.length > MAX_CARDS) {
+    throw new Error(`Deck cannot have more than ${MAX_CARDS} cards`);
   }
 
   if (cards.some((card) => !card.front.trim() || !card.back.trim())) {
     throw new Error('Cards cannot be empty');
   }
 
-  const supabase = await createClient();
+  if (cards.some((card) => card.front.length > MAX_CARD_FRONT_LENGTH || card.back.length > MAX_CARD_BACK_LENGTH)) {
+    throw new Error('Card content exceeds maximum length');
+  }
 
-  /*
-    1. Check logged in user
-  */
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -55,19 +67,11 @@ export async function updateDeck({ deckId, title, description, isPublic, cards }
     throw new Error('Unauthorized');
   }
 
-  /*
-    2. Check ownership
-  */
-
   const { data: deck } = await supabase.from('decks').select('user_id').eq('id', deckId).single();
 
   if (!deck || deck.user_id !== user.id) {
     throw new Error('You do not own this deck');
   }
-
-  /*
-    3. Update deck
-  */
 
   const { error: deckError } = await supabase
     .from('decks')
@@ -82,19 +86,10 @@ export async function updateDeck({ deckId, title, description, isPublic, cards }
     throw deckError;
   }
 
-  /*
-    4. Get current cards
-  */
-
   const { data: existingCards } = await supabase.from('cards').select('id').eq('deck_id', deckId);
 
   const existingIds = existingCards?.map((card) => card.id) ?? [];
-
-  const updatedIds = cards.filter((card) => card.id).map((card) => card.id);
-
-  /*
-    5. Delete removed cards
-  */
+  const updatedIds = cards.filter((card) => card.id).map((card) => card.id as string);
 
   const deletedIds = existingIds.filter((id) => !updatedIds.includes(id));
 
@@ -105,10 +100,6 @@ export async function updateDeck({ deckId, title, description, isPublic, cards }
       throw error;
     }
   }
-
-  /*
-    6. Update existing cards
-  */
 
   for (const card of cards) {
     if (!card.id) continue;
@@ -126,10 +117,6 @@ export async function updateDeck({ deckId, title, description, isPublic, cards }
     }
   }
 
-  /*
-    7. Insert new cards
-  */
-
   const newCards = cards
     .filter((card) => !card.id)
     .map((card) => ({
@@ -139,30 +126,38 @@ export async function updateDeck({ deckId, title, description, isPublic, cards }
     }));
 
   if (newCards.length) {
-    const { error } = await supabase.from('cards').insert(newCards);
+    const { data: insertedCards, error } = await supabase.from('cards').insert(newCards).select();
 
     if (error) {
       throw error;
     }
+
+    const reviews = insertedCards.map((card) => ({
+      user_id: user.id,
+      card_id: card.id,
+    }));
+
+    const { error: reviewError } = await supabase.from('card_reviews').insert(reviews);
+
+    if (reviewError) {
+      throw reviewError;
+    }
   }
 
-  return {
-    success: true,
-  };
+  return { success: true };
 }
 
 export async function deleteDeck(deckId: string) {
   const supabase = await createClient();
 
-  // Check user
-  const { data, error: userError } = await supabase.auth.getUser();
-  const user = data.user;
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
   if (userError || !user) {
     throw new Error('Unauthorized');
   }
-
-  // Check ownership
 
   const { data: deck, error: deckError } = await supabase.from('decks').select('user_id').eq('id', deckId).single();
 
@@ -174,28 +169,44 @@ export async function deleteDeck(deckId: string) {
     throw new Error('You do not own this deck');
   }
 
-  // Delete deck
-
   const { error } = await supabase.from('decks').delete().eq('id', deckId);
 
   if (error) {
     throw error;
   }
 
-  return {
-    success: true,
-  };
+  return { success: true };
 }
 
 export async function createDeck({ title, description, cards, is_public, creationMethod }: CreateDeckProps) {
+  if (!title.trim()) {
+    throw new Error('Deck title is required');
+  }
+
+  if (title.length > MAX_TITLE_LENGTH) {
+    throw new Error(`Title must be ${MAX_TITLE_LENGTH} characters or fewer`);
+  }
+
+  if (description.length > MAX_DESCRIPTION_LENGTH) {
+    throw new Error(`Description must be ${MAX_DESCRIPTION_LENGTH} characters or fewer`);
+  }
+
+  if (cards.length > MAX_CARDS) {
+    throw new Error(`Deck cannot have more than ${MAX_CARDS} cards`);
+  }
+
+  if (cards.some((card) => !card.front.trim() || !card.back.trim())) {
+    throw new Error('All cards must have a front and back');
+  }
+
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if(!user) {
-    throw new Error("Unauthorized");
+  if (!user) {
+    throw new Error('Unauthorized');
   }
 
   const embeddingText = `
@@ -203,27 +214,20 @@ export async function createDeck({ title, description, cards, is_public, creatio
 
     ${description}
 
-    ${cards
-      .map(
-        (card) =>
-          `${card.front}
-    ${card.back}`,
-      )
-      .join('\n')}
+    ${cards.map((card) => `${card.front}\n${card.back}`).join('\n')}
   `;
 
   const embedding = await createEmbedding(embeddingText);
 
   const { data: deck, error: deckError } = await supabase
-
     .from('decks')
     .insert({
-        user_id: user.id,
-        title,
-        description,
-        embedding,
-        is_public,
-        creation_method: creationMethod,
+      user_id: user.id,
+      title,
+      description,
+      embedding,
+      is_public,
+      creation_method: creationMethod,
     })
     .select()
     .single();
@@ -233,36 +237,30 @@ export async function createDeck({ title, description, cards, is_public, creatio
   }
 
   const { data: createdCards, error: cardError } = await supabase
-
     .from('cards')
-
     .insert(
       cards.map((card) => ({
         deck_id: deck.id,
-
         front: card.front,
-
         back: card.back,
       })),
     )
     .select();
 
   if (cardError || !createdCards) {
-    throw cardError ?? new Error("Failed to create cards");
+    throw cardError ?? new Error('Failed to create cards');
   }
 
-  await supabase
+  const { error: reviewError } = await supabase.from('card_reviews').insert(
+    createdCards.map((card) => ({
+      user_id: user.id,
+      card_id: card.id,
+    })),
+  );
 
-    .from('card_reviews')
-
-    .insert(
-      createdCards.map((card) => ({
-        user_id: user.id,
-
-        card_id: card.id,
-      })),
-    );
+  if (reviewError) {
+    throw reviewError;
+  }
 
   return deck;
 }
-
