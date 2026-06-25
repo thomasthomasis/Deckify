@@ -1,40 +1,18 @@
 import Link from 'next/link';
-import { Home, Search, Library, Plus, User, Settings } from 'lucide-react';
+import { Home, Search, Library, User, Settings } from 'lucide-react';
 
 const links = [
-  {
-    label: 'Dashboard',
-    href: '/dashboard',
-    icon: Home,
-  },
-
-  {
-    label: 'Discover',
-    href: '/discover',
-    icon: Search,
-  },
+  { label: 'Dashboard', href: '/dashboard', icon: Home },
+  { label: 'Discover', href: '/discover', icon: Search },
 ];
 
 const libraryLinks = [
-  {
-    label: 'My Library',
-    href: '/library',
-    icon: Library,
-  },
+  { label: 'My Library', href: '/library', icon: Library },
 ];
 
 const accountLinks = [
-  {
-    label: 'Profile',
-    href: '/profile',
-    icon: User,
-  },
-
-  {
-    label: 'Settings',
-    href: '/account',
-    icon: Settings,
-  },
+  { label: 'Profile', href: '/profile', icon: User },
+  { label: 'Settings', href: '/account', icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -44,7 +22,6 @@ export default function Sidebar() {
         <div className="space-y-2">
           {links.map((item) => {
             const Icon = item.icon;
-
             return (
               <Link
                 key={item.href}
@@ -52,7 +29,6 @@ export default function Sidebar() {
                 className="flex items-center gap-3 rounded-xl px-4 py-3 text-zinc-300 transition hover:bg-white/5 hover:text-white"
               >
                 <Icon size={20} />
-
                 {item.label}
               </Link>
             );
@@ -60,11 +36,9 @@ export default function Sidebar() {
         </div>
 
         <div>
-          <p className="mb-3 px-4 text-xs text-zinc-500 uppercase">Library</p>
-
+          <p className="mb-3 px-4 text-xs uppercase text-zinc-500">Library</p>
           {libraryLinks.map((item) => {
             const Icon = item.icon;
-
             return (
               <Link
                 key={item.href}
@@ -72,7 +46,6 @@ export default function Sidebar() {
                 className="flex items-center gap-3 rounded-xl px-4 py-3 text-zinc-300 transition hover:bg-white/5 hover:text-white"
               >
                 <Icon size={20} />
-
                 {item.label}
               </Link>
             );
@@ -80,11 +53,9 @@ export default function Sidebar() {
         </div>
 
         <div>
-          <p className="mb-3 px-4 text-xs text-zinc-500 uppercase">Account</p>
-
+          <p className="mb-3 px-4 text-xs uppercase text-zinc-500">Account</p>
           {accountLinks.map((item) => {
             const Icon = item.icon;
-
             return (
               <Link
                 key={item.href}
@@ -92,7 +63,6 @@ export default function Sidebar() {
                 className="flex items-center gap-3 rounded-xl px-4 py-3 text-zinc-300 transition hover:bg-white/5 hover:text-white"
               >
                 <Icon size={20} />
-
                 {item.label}
               </Link>
             );

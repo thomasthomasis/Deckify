@@ -17,7 +17,21 @@ export default function ResetPasswordForm() {
 
   const [loading, setLoading] = useState(false);
 
+  function validatePassword(password: string): string | null {
+    if (password.length < 8) return 'Password must be at least 8 characters';
+    if (!/[A-Z]/.test(password)) return 'Password must contain an uppercase letter';
+    if (!/[0-9]/.test(password)) return 'Password must contain a number';
+    return null;
+  }
+
   async function handleResetPassword() {
+
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      toast.error(passwordError)
+      return;
+    }
+    
     if (!password || !confirmPassword) {
       toast.error('Please fill in both fields');
 
@@ -30,7 +44,7 @@ export default function ResetPasswordForm() {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       toast.error('Password must be at least 6 characters');
 
       return;

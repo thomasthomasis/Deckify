@@ -8,16 +8,7 @@ interface DeckCardProps {
   progress: number;
 }
 
-export default function DeckCard({
-  id,
-  title,
-
-  cardCount,
-
-  dueCount,
-
-  progress,
-}: DeckCardProps) {
+export default function DeckCard({ id, title, cardCount, dueCount, progress }: DeckCardProps) {
   return (
     <div className="group rounded-3xl border border-white/10 bg-white/5 p-6 transition hover:-translate-y-1 hover:border-emerald-400/50">
       <div className="flex items-start justify-between">
@@ -27,7 +18,9 @@ export default function DeckCard({
           <p className="mt-2 text-sm text-zinc-400">{cardCount} cards</p>
         </div>
 
-        <div className="rounded-full bg-emerald-500/10 px-3 py-1 text-sm text-emerald-400">{dueCount} due</div>
+        <div className="rounded-full bg-emerald-500/10 px-3 py-1 text-sm text-emerald-400">
+          {dueCount} due
+        </div>
       </div>
 
       <div className="mt-6">
@@ -40,19 +33,26 @@ export default function DeckCard({
         <div className="mt-2 h-2 rounded-full bg-white/10">
           <div
             className="h-full rounded-full bg-emerald-400 transition-all"
-            style={{
-              width: `${progress}%`,
-            }}
+            style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      <Link
-        href={`/decks/${id}`}
-        className="mt-6 block w-full rounded-xl bg-white/10 py-3 text-center font-medium transition hover:bg-emerald-500 hover:text-black"
-      >
-        Continue →
-      </Link>
+      <div className="mt-6 flex gap-3">
+        <Link
+          href={`/decks/${id}`}
+          className="flex-1 rounded-xl border border-white/10 py-3 text-center text-sm font-medium transition hover:bg-white/10"
+        >
+          View
+        </Link>
+
+        <Link
+          href={`/study/${id}`}
+          className="flex-1 rounded-xl bg-emerald-500 py-3 text-center text-sm font-semibold text-black transition hover:bg-emerald-400"
+        >
+          {dueCount > 0 ? `Study ${dueCount}` : 'Review'}
+        </Link>
+      </div>
     </div>
   );
 }

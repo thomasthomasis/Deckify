@@ -1,25 +1,46 @@
 import { createClient } from '@/lib/supabase/server';
-import { calculateLevel } from './level';
 import { calculateStreak } from './streaks';
 
-export async function updateUserStats(userId: string, xpEarned: number) {
+export async function updateStreakAndCards(userId: string, studyTimeSeconds: number) {
   const supabase = await createClient();
 
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+  const [statsResult, profileResult] = await Promise.all([
+    supabase
+      .from('user_stats')
+      .select('current_streak, longest_streak, total_cards_reviewed, total_study_time')
+      .eq('user_id', userId)
+      .single(),
+    supabase.from('profiles').select('last_studied').eq('id', userId).single(),
+  ]);
 
-  if (!profile) {
-    throw new Error(`Profile not found for user ${userId}`);
+  const stats = statsResult.data;
+  const profile = profileResult.data;
+
+  const newStreak = calculateStreak(profile?.last_studied ?? null, stats?.current_streak ?? 0);
+  const newLongest = Math.max(newStreak, stats?.longest_streak ?? 0);
+  const newTotalCards = (stats?.total_cards_reviewed ?? 0) + 1;
+  const newStudyTime = (stats?.total_study_time ?? 0) + studyTimeSeconds;
+
+  const [statsUpdate] = await Promise.all([
+    supabase
+      .from('user_stats')
+      .update({
+        current_streak: newStreak,
+        longest_streak: newLongest,
+        total_cards_reviewed: newTotalCards,
+        total_study_time: newStudyTime,
+      })
+      .eq('user_id', userId)
+      .select('user_id'),
+
+    supabase.from('profiles').update({ last_studied: new Date().toISOString() }).eq('id', userId),
+  ]);
+
+  if (statsUpdate.error) {
+    throw new Error(`Failed to update stats: ${statsUpdate.error.message}`);
   }
 
-  const newXP = (profile.xp ?? 0) + xpEarned;
-
-  await supabase
-    .from('profiles')
-    .update({
-      xp: newXP,
-      level: calculateLevel(newXP),
-      streak: calculateStreak(profile.last_studied, profile.streak ?? 0),
-      words_studied: (profile.words_studied ?? 0) + 1,
-    })
-    .eq('id', userId);
+  if (!statsUpdate.data?.length) {
+    throw new Error('Stats update matched no rows — check RLS policy on user_stats');
+  }
 }

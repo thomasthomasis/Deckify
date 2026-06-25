@@ -1,22 +1,15 @@
 interface DashboardStatsProps {
   stats: {
-    current_streak: number | null;
-
-    level: number | null;
-
-    xp: number | null;
-
-    total_cards_reviewed: number | null;
-
-    total_words_learned: number | null;
+    current_streak?: number | null;
+    level?: number | null;
+    xp?: number | null;
+    total_cards_reviewed?: number | null;
   } | null;
 }
 
 export default function DashboardStats({ stats }: DashboardStatsProps) {
   return (
     <section className="grid gap-4 md:grid-cols-3">
-      {/* Streak */}
-
       <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl transition hover:-translate-y-1">
         <p className="text-sm text-zinc-400">Current Streak</p>
 
@@ -25,8 +18,6 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
         <p className="mt-2 text-sm text-zinc-500">days</p>
       </div>
 
-      {/* Level */}
-
       <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl transition hover:-translate-y-1">
         <p className="text-sm text-zinc-400">Level</p>
 
@@ -34,8 +25,6 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
 
         <p className="mt-2 text-sm text-zinc-500">learner</p>
       </div>
-
-      {/* XP */}
 
       <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl transition hover:-translate-y-1">
         <p className="text-sm text-zinc-400">Experience</p>

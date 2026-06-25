@@ -25,6 +25,11 @@ export async function generateAICards({ notes, amount }: GenerateCardsInput) {
     throw new Error('Unauthorized');
   }
 
+  const { data: stats } = await supabase.from("user_stats").select("ai_credits").eq("user_id", user.id).single();
+  if((stats?.ai_credits ?? 0) <= 0) {
+    throw new Error('Insufficient credits');
+  } 
+
   if (!notes || typeof notes !== 'string') {
     throw new Error('Notes are required');
   }

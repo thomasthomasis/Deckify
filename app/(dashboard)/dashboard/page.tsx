@@ -18,17 +18,28 @@ export default async function DashboardPage() {
 
   const today = new Date().toISOString();
 
-  const [statsResult, profileResult, decksResult, reviewsResult] = await Promise.all([
+  const [statsResult, profileResult, ownedResult, savedResult, reviewsResult] = await Promise.all([
     supabase.from('user_stats').select('*').eq('user_id', user.id).single(),
     supabase.from('profiles').select('display_name').eq('id', user.id).single(),
     supabase.from('decks').select('id, title, cards(id)').eq('user_id', user.id),
-    supabase.from('card_reviews').select('card_id, cards(deck_id)').eq('user_id', user.id).lte('next_review', today),
+    supabase.from('saved_decks').select('deck:decks(id, title, cards(id))').eq('user_id', user.id),
+    supabase.from('card_reviews').select('card_id').eq('user_id', user.id).lte('next_review', today),
   ]);
 
   const stats = statsResult.data;
   const displayName = profileResult.data?.display_name ?? 'there';
-  const decks = decksResult.data ?? [];
   const reviews = reviewsResult.data ?? [];
+
+  type DeckRow = { id: string; title: string; cards: { id: string }[] };
+
+  const ownedDecks: DeckRow[] = (ownedResult.data ?? []) as DeckRow[];
+  const savedDecks: DeckRow[] = (savedResult.data ?? [])
+    .map((row) => (Array.isArray(row.deck) ? row.deck[0] : row.deck))
+    .filter((d): d is DeckRow => Boolean(d));
+
+  // Merge owned + saved, deduplicate by id
+  const ownedIds = new Set(ownedDecks.map((d) => d.id));
+  const allDecks = [...ownedDecks, ...savedDecks.filter((d) => !ownedIds.has(d.id))];
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -65,7 +76,7 @@ export default async function DashboardPage() {
           </div>
 
           <div className="mt-8">
-            <DeckList decks={decks} reviews={reviews} />
+            <DeckList decks={allDecks} reviews={reviews} />
           </div>
         </section>
       </div>

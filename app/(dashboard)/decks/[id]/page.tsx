@@ -62,15 +62,17 @@ export default async function DeckPage({ params }: Props) {
 
   const cardCount = deck.cards?.length ?? 0;
 
-  const { data: reviews } = await supabase
-    .from('card_reviews')
-    .select('*')
-    .eq('user_id', user.id)
-    .in(
-      'card_id',
-      deck.cards.map((card: { id: string }) => card.id),
-    )
-    .lte('next_review', new Date().toISOString());
+  const cardIds = (deck.cards ?? []).map((card: { id: string }) => card.id);
+
+  const { data: reviews } =
+    cardIds.length > 0
+      ? await supabase
+          .from('card_reviews')
+          .select('card_id')
+          .eq('user_id', user.id)
+          .in('card_id', cardIds)
+          .lte('next_review', new Date().toISOString())
+      : { data: [] };
 
   const dueCount = reviews?.length ?? 0;
 
@@ -99,12 +101,21 @@ export default async function DeckPage({ params }: Props) {
               )}
             </div>
 
-            <Link
-              href={`/study/${deck.id}`}
-              className="rounded-xl bg-emerald-500 px-6 py-3 text-center font-semibold text-black transition hover:bg-emerald-400"
-            >
-              Start Studying
-            </Link>
+            <div className="flex flex-col gap-3">
+              <Link
+                href={`/study/${deck.id}`}
+                className="rounded-xl bg-emerald-500 px-6 py-3 text-center font-semibold text-black transition hover:bg-emerald-400"
+              >
+                Study {dueCount > 0 ? `(${dueCount} due)` : ''}
+              </Link>
+
+              <Link
+                href={`/study/${deck.id}?restudy=true`}
+                className="rounded-xl border border-white/10 px-6 py-3 text-center text-sm font-medium transition hover:bg-white/10"
+              >
+                Restudy All
+              </Link>
+            </div>
           </div>
         </section>
 

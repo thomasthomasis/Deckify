@@ -7,6 +7,15 @@ interface ProfileStatsProps {
   total_study_time?: number;
 }
 
+function formatStudyTime(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const mins = Math.floor(seconds / 60);
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  const remainingMins = mins % 60;
+  return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`;
+}
+
 export default function ProfileStats({
   current_streak = 0,
   longest_streak = 0,
@@ -78,7 +87,7 @@ export default function ProfileStats({
       <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
         <p className="text-sm text-zinc-400">Study Time</p>
 
-        <h3 className="mt-2 text-3xl font-bold">{total_study_time}</h3>
+        <h3 className="mt-2 text-3xl font-bold">{formatStudyTime(total_study_time)}</h3>
 
         <p className="mt-2 text-sm text-zinc-500">Total study time</p>
       </div>

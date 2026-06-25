@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -8,6 +8,8 @@ import { submitReview } from '@/app/actions/reviewActions';
 import { Rating } from '@/lib/study/algorithm';
 import StudyControls from './StudyControls';
 import StudyProgress from './StudyProgress';
+
+const MAX_SECONDS_PER_CARD = 300;
 
 interface Card {
   id: string;
@@ -22,43 +24,41 @@ interface Props {
 export default function Flashcard({ cards }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const cardShownAt = useRef<number>(Date.now());
+  const ratingInFlight = useRef(false);
 
   const card = cards[currentIndex];
 
   function handleNext() {
+    cardShownAt.current = Date.now();
+    ratingInFlight.current = false;
     setShowAnswer(false);
     setCurrentIndex((prev) => prev + 1);
   }
 
   const handleRating = useCallback(
-    async (rating: Rating) => {
-      if (submitting || !card) return;
+    (rating: Rating) => {
+      if (ratingInFlight.current || !card) return;
+      ratingInFlight.current = true;
 
-      setSubmitting(true);
-      try {
-        await submitReview(card.id, rating);
-      } catch {
-        toast.error('Failed to save review. Please try again.');
-      } finally {
-        setSubmitting(false);
-      }
+      const elapsed = Math.round((Date.now() - cardShownAt.current) / 1000);
+      const studyTimeSeconds = Math.min(elapsed, MAX_SECONDS_PER_CARD);
+
+      submitReview(card.id, rating, studyTimeSeconds).catch(() => {
+        toast.error('Failed to save review — progress may not be recorded.');
+      });
 
       handleNext();
     },
-    [card, submitting],
+    [card],
   );
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (!showAnswer) {
-        if (event.key === 'Enter') {
-          setShowAnswer(true);
-        }
+        if (event.key === 'Enter') setShowAnswer(true);
         return;
       }
-
-      if (submitting) return;
 
       if (event.key === '1') handleRating('again');
       if (event.key === '2') handleRating('hard');
@@ -68,7 +68,7 @@ export default function Flashcard({ cards }: Props) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showAnswer, submitting, handleRating]);
+  }, [showAnswer, handleRating]);
 
   if (!card) {
     return (

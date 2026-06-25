@@ -1,21 +1,24 @@
-'use client';
-
 import Link from 'next/link';
-import { UserCircle } from 'lucide-react';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { Sparkles } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
+import NavbarUserMenu from './NavbarUserMenu';
 
-export default function Navbar() {
-  const [open, setOpen] = useState(false);
-  const router = useRouter();
+export default async function Navbar() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    setOpen(false);
-    router.push('/login');
-    router.refresh();
+  let credits = 0;
+  if (user) {
+    try {
+      const { data } = await supabase
+        .from('user_stats')
+        .select('ai_credits')
+        .eq('user_id', user.id)
+        .single();
+      credits = data?.ai_credits ?? 0;
+    } catch {
+      // ai_credits column may not exist yet
+    }
   }
 
   return (
@@ -24,30 +27,21 @@ export default function Navbar() {
         Deckify
       </Link>
 
-      <div className="relative">
-        <button type="button" onClick={() => setOpen(!open)} className="text-zinc-400 transition hover:text-white">
-          <UserCircle size={28} />
-        </button>
-
-        {open && (
-          <div className="absolute top-5 right-0 mt-3 w-48 rounded-xl border border-white/10 bg-zinc-900 p-2 shadow-lg">
-            <Link
-              href="/profile"
-              className="block rounded-lg px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/10 hover:text-white"
-              onClick={() => setOpen(false)}
-            >
-              Visit Profile
-            </Link>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="block w-full rounded-lg px-4 py-2 text-left text-sm text-zinc-300 transition hover:bg-white/10 hover:text-white"
-            >
-              Logout
-            </button>
-          </div>
+      <div className="flex items-center gap-4">
+        {user && (
+          <Link
+            href="/create/ai"
+            className="flex items-center gap-2 p-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm transition hover:bg-white/10"
+          >
+            <Sparkles size={14} className="text-emerald-400" />
+            <span className="text-zinc-300">Credits</span>
+            <span className={`font-bold ${credits === 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+              {credits}
+            </span>
+          </Link>
         )}
+
+        <NavbarUserMenu />
       </div>
     </header>
   );

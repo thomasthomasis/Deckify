@@ -4,15 +4,16 @@ import Flashcard from '@/components/ui/study/Flashcard';
 import Link from 'next/link';
 
 interface Props {
-  params: Promise<{
-    deckId: string;
-  }>;
+  params: Promise<{ deckId: string }>;
+  searchParams: Promise<{ restudy?: string }>;
 }
 
-export default async function StudyPage({ params }: Props) {
+export default async function StudyPage({ params, searchParams }: Props) {
   const supabase = await createClient();
 
   const { deckId } = await params;
+  const { restudy } = await searchParams;
+  const isRestudy = restudy === 'true';
 
   const {
     data: { user },
@@ -22,7 +23,11 @@ export default async function StudyPage({ params }: Props) {
     redirect('/login');
   }
 
-  const { data: deck } = await supabase.from('decks').select('id, user_id, is_public').eq('id', deckId).single();
+  const { data: deck } = await supabase
+    .from('decks')
+    .select('id, user_id, is_public')
+    .eq('id', deckId)
+    .single();
 
   if (!deck) {
     notFound();
@@ -36,32 +41,21 @@ export default async function StudyPage({ params }: Props) {
 
   const { data } = await supabase
     .from('cards')
-    .select(
-      `
-        id,
-        front,
-        back,
-        card_reviews(*)
-    `,
-    )
-    .eq('deck_id', deckId);
+    .select(`id, front, back, card_reviews!inner(interval, repetitions, ease_factor, next_review)`)
+    .eq('card_reviews.user_id', user.id);
 
   const cards =
     data
       ?.filter((card) => {
-        const review = card.card_reviews?.[0];
+        if (isRestudy) return true;
 
-        if (!review) {
-          return true;
-        }
+        const review = card.card_reviews?.[0];
+        if (!review) return true;
 
         return new Date(review.next_review) <= new Date();
       })
-      .map((card) => ({
-        id: card.id,
-        front: card.front,
-        back: card.back,
-      })) ?? [];
+      .map((card) => ({ id: card.id, front: card.front, back: card.back }))
+      .sort(() => Math.random() - 0.5) ?? [];
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
@@ -73,7 +67,15 @@ export default async function StudyPage({ params }: Props) {
           ← Back to Deck
         </Link>
 
-        <h1 className="text-3xl font-bold">Study Session</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold">Study Session</h1>
+
+          {isRestudy && (
+            <span className="rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-400">
+              Restudy
+            </span>
+          )}
+        </div>
 
         <p className="mt-2 text-zinc-400">{cards.length} cards ready to review</p>
 
@@ -83,7 +85,14 @@ export default async function StudyPage({ params }: Props) {
           <div className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
             <h2 className="text-2xl font-bold">🎉 All caught up!</h2>
 
-            <p className="mt-3 text-zinc-400">You have no cards due right now. Come back later for your next review.</p>
+            <p className="mt-3 text-zinc-400">No cards due right now.</p>
+
+            <Link
+              href={`/study/${deckId}?restudy=true`}
+              className="mt-6 inline-block rounded-xl border border-white/10 px-6 py-3 text-sm font-semibold transition hover:bg-white/10"
+            >
+              Restudy all cards anyway
+            </Link>
           </div>
         )}
       </div>
