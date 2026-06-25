@@ -3,23 +3,34 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+const CONSENT_COOKIE = 'deckify-cookie-consent';
+const MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+
+function getConsent(): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${CONSENT_COOKIE}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setConsent(value: 'accepted' | 'declined') {
+  document.cookie = `${CONSENT_COOKIE}=${value}; max-age=${MAX_AGE}; path=/; SameSite=Lax`;
+}
+
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem('deckify-cookie-consent');
-    if (!consent) {
+    if (!getConsent()) {
       setVisible(true);
     }
   }, []);
 
   function accept() {
-    localStorage.setItem('deckify-cookie-consent', 'accepted');
+    setConsent('accepted');
     setVisible(false);
   }
 
   function decline() {
-    localStorage.setItem('deckify-cookie-consent', 'declined');
+    setConsent('declined');
     setVisible(false);
   }
 
@@ -30,8 +41,8 @@ export default function CookieBanner() {
       <h3 className="font-semibold">We use cookies</h3>
 
       <p className="mt-2 text-sm text-zinc-400">
-        Deckify uses essential cookies to keep you signed in and improve your experience. You can decline non-essential
-        cookies.
+        Deckify uses essential cookies to keep you signed in. You can decline optional analytics cookies — essential
+        cookies will remain active.
       </p>
 
       <div className="mt-4 flex gap-3">

@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
 
 interface Props {
@@ -8,11 +7,7 @@ interface Props {
   reset: () => void;
 }
 
-export default function DeckError({ error, reset }: Props) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
-
+export default function DeckError({ error: _error, reset }: Props) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 text-white">
       <div className="rounded-3xl border border-white/10 bg-white/5 p-12 text-center">

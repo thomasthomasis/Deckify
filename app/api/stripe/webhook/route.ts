@@ -30,7 +30,12 @@ export async function POST(request: Request) {
     }
 
     const supabase = createAdminClient();
-    await supabase.rpc('add_ai_credits', { p_user_id: userId, p_amount: credits });
+    const { error } = await supabase.rpc('add_ai_credits', { p_user_id: userId, p_amount: credits });
+
+    if (error) {
+      // Return 500 so Stripe retries — user paid but credits not added
+      return NextResponse.json({ error: 'Failed to add credits' }, { status: 500 });
+    }
   }
 
   return NextResponse.json({ received: true });

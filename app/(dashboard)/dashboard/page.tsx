@@ -1,11 +1,18 @@
 import DashboardStats from '@/components/ui/dashboard/DashboardStats';
 import DeckList from '@/components/ui/dashboard/DeckList';
+import Pagination from '@/components/ui/Pagination';
 import Link from 'next/link';
 
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
-export default async function DashboardPage() {
+const PAGE_SIZE = 8;
+
+interface Props {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function DashboardPage({ searchParams }: Props) {
   const supabase = await createClient();
 
   const {
@@ -18,16 +25,21 @@ export default async function DashboardPage() {
 
   const today = new Date().toISOString();
 
-  const [statsResult, profileResult, ownedResult, savedResult, reviewsResult] = await Promise.all([
-    supabase.from('user_stats').select('*').eq('user_id', user.id).single(),
-    supabase.from('profiles').select('display_name').eq('id', user.id).single(),
+  const [statsResult, ownedResult, savedResult, reviewsResult] = await Promise.all([
+    supabase
+      .from('user_stats')
+      .select('*, profiles(display_name)')
+      .eq('user_id', user.id)
+      .single(),
     supabase.from('decks').select('id, title, cards(id)').eq('user_id', user.id),
     supabase.from('saved_decks').select('deck:decks(id, title, cards(id))').eq('user_id', user.id),
     supabase.from('card_reviews').select('card_id').eq('user_id', user.id).lte('next_review', today),
   ]);
 
   const stats = statsResult.data;
-  const displayName = profileResult.data?.display_name ?? 'there';
+  const profileData = statsResult.data?.profiles;
+  const displayName =
+    (Array.isArray(profileData) ? profileData[0]?.display_name : profileData?.display_name) ?? 'there';
   const reviews = reviewsResult.data ?? [];
 
   type DeckRow = { id: string; title: string; cards: { id: string }[] };
@@ -40,6 +52,11 @@ export default async function DashboardPage() {
   // Merge owned + saved, deduplicate by id
   const ownedIds = new Set(ownedDecks.map((d) => d.id));
   const allDecks = [...ownedDecks, ...savedDecks.filter((d) => !ownedIds.has(d.id))];
+
+  const params = await searchParams;
+  const page = Math.max(1, parseInt(params.page ?? '1'));
+  const totalPages = Math.ceil(allDecks.length / PAGE_SIZE);
+  const paginatedDecks = allDecks.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -76,8 +93,15 @@ export default async function DashboardPage() {
           </div>
 
           <div className="mt-8">
-            <DeckList decks={allDecks} reviews={reviews} />
+            <DeckList decks={paginatedDecks} reviews={reviews} />
           </div>
+
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            prevHref={page > 1 ? `?page=${page - 1}` : null}
+            nextHref={page < totalPages ? `?page=${page + 1}` : null}
+          />
         </section>
       </div>
     </main>

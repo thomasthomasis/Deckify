@@ -24,7 +24,7 @@ export default function ProfileStats({
   total_cards_reviewed = 0,
   total_study_time = 0,
 }: ProfileStatsProps) {
-  const xpPerLevel = 1000;
+  const xpPerLevel = 500;
   const currentXP = xp % xpPerLevel;
   const progress = Math.min((currentXP / xpPerLevel) * 100);
 

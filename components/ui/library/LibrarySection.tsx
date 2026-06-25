@@ -1,9 +1,19 @@
 import Link from 'next/link';
 import LibraryDeckCard from './LibraryDeckCard';
 
+interface LibraryDeck {
+  id: string;
+  title: string;
+  description?: string | null;
+  is_public?: boolean;
+  user_id?: string;
+  cards?: { id: string }[];
+  profiles?: { display_name?: string | null } | { display_name?: string | null }[] | null;
+}
+
 interface Props {
   title: string;
-  decks: any[];
+  decks: LibraryDeck[];
   sectionType: 'owned' | 'saved';
 }
 
@@ -19,7 +29,7 @@ export default function LibrarySection({ title, decks, sectionType }: Props) {
       {decks.length > 0 ? (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {decks.map((deck) => (
-            <LibraryDeckCard key={deck.id} deck={deck} />
+            <LibraryDeckCard key={deck.id} deck={deck} isOwner={isOwned} />
           ))}
         </div>
       ) : (

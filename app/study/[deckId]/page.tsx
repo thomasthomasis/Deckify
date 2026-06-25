@@ -41,7 +41,8 @@ export default async function StudyPage({ params, searchParams }: Props) {
 
   const { data } = await supabase
     .from('cards')
-    .select(`id, front, back, card_reviews!inner(interval, repetitions, ease_factor, next_review)`)
+    .select(`id, front, back, card_reviews(interval, repetitions, ease_factor, next_review)`)
+    .eq('deck_id', deckId)
     .eq('card_reviews.user_id', user.id);
 
   const cards =
@@ -55,7 +56,13 @@ export default async function StudyPage({ params, searchParams }: Props) {
         return new Date(review.next_review) <= new Date();
       })
       .map((card) => ({ id: card.id, front: card.front, back: card.back }))
-      .sort(() => Math.random() - 0.5) ?? [];
+      .sort(() => 0) ?? [];
+
+  // Fisher-Yates shuffle — unbiased
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">

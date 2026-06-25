@@ -8,66 +8,48 @@ import { toast } from 'sonner';
 
 export default function ResetPasswordForm() {
   const supabase = createClient();
-
   const router = useRouter();
 
   const [password, setPassword] = useState('');
-
   const [confirmPassword, setConfirmPassword] = useState('');
-
   const [loading, setLoading] = useState(false);
 
-  function validatePassword(password: string): string | null {
-    if (password.length < 8) return 'Password must be at least 8 characters';
-    if (!/[A-Z]/.test(password)) return 'Password must contain an uppercase letter';
-    if (!/[0-9]/.test(password)) return 'Password must contain a number';
+  function validatePassword(pw: string): string | null {
+    if (pw.length < 8) return 'Password must be at least 8 characters';
+    if (!/[A-Z]/.test(pw)) return 'Password must contain an uppercase letter';
+    if (!/[0-9]/.test(pw)) return 'Password must contain a number';
     return null;
   }
 
   async function handleResetPassword() {
-
-    const passwordError = validatePassword(password);
-    if (passwordError) {
-      toast.error(passwordError)
-      return;
-    }
-    
     if (!password || !confirmPassword) {
       toast.error('Please fill in both fields');
-
       return;
     }
 
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
-
       return;
     }
 
-    if (password.length < 8) {
-      toast.error('Password must be at least 6 characters');
-
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      toast.error(passwordError);
       return;
     }
 
     setLoading(true);
 
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
+    const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
       toast.error(error.message);
-
       setLoading(false);
-
       return;
     }
 
     toast.success('Password updated successfully');
-
     router.push('/login');
-
     setLoading(false);
   }
 

@@ -1,59 +1,67 @@
+import { unstable_cache } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 
 const DECK_COLUMNS = 'id, title, description, save_count, study_count, created_at, user_id, is_public';
 
-export async function searchDecks(query: string) {
-  const supabase = await createClient();
+const SEARCH_PAGE_SIZE = 12;
 
-  const { data, error } = await supabase
+export async function searchDecks(query: string, page = 1) {
+  const supabase = await createClient();
+  const from = (page - 1) * SEARCH_PAGE_SIZE;
+  const to = page * SEARCH_PAGE_SIZE - 1;
+
+  const { data, count, error } = await supabase
     .from('decks')
-    .select(DECK_COLUMNS)
+    .select(DECK_COLUMNS, { count: 'exact' })
     .eq('is_public', true)
     .ilike('title', `%${query}%`)
-    .limit(20);
+    .range(from, to);
 
-  if (error) {
-    return [];
-  }
-
-  return data ?? [];
+  if (error) return { decks: [], total: 0 };
+  return { decks: data ?? [], total: count ?? 0 };
 }
 
-export async function getTrendingDecks() {
-  const supabase = await createClient();
+export const getTrendingDecks = unstable_cache(
+  async () => {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from('decks')
+      .select(DECK_COLUMNS)
+      .eq('is_public', true)
+      .order('save_count', { ascending: false })
+      .limit(8);
+    return data ?? [];
+  },
+  ['trending-decks'],
+  { revalidate: 300 },
+);
 
-  const { data } = await supabase
-    .from('decks')
-    .select(DECK_COLUMNS)
-    .eq('is_public', true)
-    .order('save_count', { ascending: false })
-    .limit(8);
+export const getPopularDecks = unstable_cache(
+  async () => {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from('decks')
+      .select(DECK_COLUMNS)
+      .eq('is_public', true)
+      .order('study_count', { ascending: false })
+      .limit(8);
+    return data ?? [];
+  },
+  ['popular-decks'],
+  { revalidate: 300 },
+);
 
-  return data ?? [];
-}
-
-export async function getPopularDecks() {
-  const supabase = await createClient();
-
-  const { data } = await supabase
-    .from('decks')
-    .select(DECK_COLUMNS)
-    .eq('is_public', true)
-    .order('study_count', { ascending: false })
-    .limit(8);
-
-  return data ?? [];
-}
-
-export async function getRecentDecks() {
-  const supabase = await createClient();
-
-  const { data } = await supabase
-    .from('decks')
-    .select(DECK_COLUMNS)
-    .eq('is_public', true)
-    .order('created_at', { ascending: false })
-    .limit(8);
-
-  return data ?? [];
-}
+export const getRecentDecks = unstable_cache(
+  async () => {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from('decks')
+      .select(DECK_COLUMNS)
+      .eq('is_public', true)
+      .order('created_at', { ascending: false })
+      .limit(8);
+    return data ?? [];
+  },
+  ['recent-decks'],
+  { revalidate: 300 },
+);

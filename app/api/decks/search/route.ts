@@ -1,7 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/rateLimit';
 
 export async function GET(request: Request) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'anonymous';
+  if (!rateLimit(`search:${ip}`, 60, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const supabase = await createClient();
 
   const {

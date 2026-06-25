@@ -8,10 +8,19 @@ export default function ForgotPasswordForm() {
   const supabase = createClient();
 
   const [email, setEmail] = useState('');
-
   const [loading, setLoading] = useState(false);
 
   async function handleReset() {
+    if (!email.trim()) {
+      toast.error('Please enter your email address');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
     setLoading(true);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -30,6 +39,7 @@ export default function ForgotPasswordForm() {
   return (
     <div className="mt-8 space-y-4">
       <input
+        type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email address"
@@ -37,6 +47,7 @@ export default function ForgotPasswordForm() {
       />
 
       <button
+        type="button"
         onClick={handleReset}
         disabled={loading}
         className="w-full rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-black transition hover:bg-emerald-400 disabled:opacity-50"

@@ -76,8 +76,7 @@ export default function EditDeckForm({ deck }: Props) {
       toast.success('Deck updated successfully');
 
       router.refresh();
-    } catch (error) {
-      console.error('Update failed:', error);
+    } catch {
       toast.error('Failed to update deck');
     } finally {
       setSaving(false);

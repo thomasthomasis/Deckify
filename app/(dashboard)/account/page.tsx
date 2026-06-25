@@ -22,7 +22,11 @@ export default async function AccountPage() {
 
   const hasGoogleProvider = identities.some((identity) => identity.provider === 'google');
 
-  const { data: settings } = await supabase.from('user_settings').select('*').eq('user_id', user.id).single();
+  const { data: settings } = await supabase
+    .from('user_settings')
+    .select('daily_goal, reminders_enabled')
+    .eq('user_id', user.id)
+    .single();
 
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-0 text-white">

@@ -26,8 +26,7 @@ export default function DeleteDeckButton({ deckId }: Props) {
 
       toast.success('Deck deleted');
       router.replace('/dashboard');
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error('Failed to delete deck');
       setLoading(false);
     }

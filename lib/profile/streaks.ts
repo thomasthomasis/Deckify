@@ -1,21 +1,18 @@
-export function calculateStreak(lastStudied: string | null, currentStreak: number) {
-  if (!lastStudied) {
-    return 1;
-  }
+function getLocalDateStr(date: Date, timezone: string): string {
+  return date.toLocaleDateString('en-CA', { timeZone: timezone });
+}
 
-  const today = new Date();
+export function calculateStreak(lastStudied: string | null, currentStreak: number, timezone = 'UTC') {
+  if (!lastStudied) return 1;
 
-  const last = new Date(lastStudied);
+  const todayStr = getLocalDateStr(new Date(), timezone);
+  const lastStr = getLocalDateStr(new Date(lastStudied), timezone);
 
-  const difference = Math.floor((today.getTime() - last.getTime()) / 86400000);
+  const today = new Date(todayStr);
+  const last = new Date(lastStr);
+  const difference = Math.round((today.getTime() - last.getTime()) / 86400000);
 
-  if (difference === 1) {
-    return currentStreak + 1;
-  }
-
-  if (difference === 0) {
-    return currentStreak;
-  }
-
+  if (difference === 1) return currentStreak + 1;
+  if (difference === 0) return currentStreak;
   return 1;
 }

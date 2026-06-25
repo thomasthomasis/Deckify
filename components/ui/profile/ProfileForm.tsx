@@ -13,22 +13,26 @@ export default function ProfileForm({ displayName }: { displayName: string }) {
   async function handleSave() {
     setSaving(true);
 
-    const response = await fetch('/api/profile', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ displayName: name }),
-    });
+    try {
+      const response = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName: name }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error ?? 'Failed to update profile');
+      if (!response.ok) {
+        throw new Error(data.error ?? 'Failed to update profile');
+      }
+
+      toast.success('Profile updated');
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile');
+    } finally {
+      setSaving(false);
     }
-
-    toast.success('Profile updated');
-    router.refresh();
-
-    setSaving(false);
   }
 
   return (

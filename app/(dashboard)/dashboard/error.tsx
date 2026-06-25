@@ -1,17 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
-
 interface Props {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
-export default function DashboardError({ error, reset }: Props) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
-
+export default function DashboardError({ error: _error, reset }: Props) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 text-white">
       <div className="rounded-3xl border border-white/10 bg-white/5 p-12 text-center">

@@ -1,9 +1,19 @@
 import DeckCard from '@/components/ui/dashboard/DeckCard';
 import Link from 'next/link';
 
+interface Deck {
+  id: string;
+  title: string;
+  cards?: { id: string }[];
+}
+
+interface Review {
+  card_id: string;
+}
+
 interface Props {
-  decks: any[];
-  reviews: any[];
+  decks: Deck[];
+  reviews: Review[];
 }
 
 export default function DeckList({ decks, reviews }: Props) {
@@ -24,13 +34,14 @@ export default function DeckList({ decks, reviews }: Props) {
     );
   }
 
+  // O(n) lookup — build set once, not inside the per-deck loop
+  const dueCardIds = new Set(reviews.map((r) => r.card_id));
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {decks.map((deck) => {
         const cardCount = deck.cards?.length ?? 0;
-
-        const dueCount = reviews.filter((review) => deck.cards?.some((card: any) => card.id === review.card_id)).length;
-
+        const dueCount = deck.cards?.filter((card) => dueCardIds.has(card.id)).length ?? 0;
         const progress = cardCount > 0 ? Math.round(((cardCount - dueCount) / cardCount) * 100) : 0;
 
         return (

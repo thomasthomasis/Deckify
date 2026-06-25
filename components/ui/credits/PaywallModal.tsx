@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 const PACKS = [
   {
@@ -51,15 +52,22 @@ export default function PaywallModal({ onClose }: Props) {
       window.location.href = url;
     } catch {
       setLoading(null);
+      toast.error('Failed to start checkout. Please try again.');
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="paywall-title"
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+    >
       <div className="w-full max-w-md rounded-3xl border border-white/10 bg-zinc-900 p-8 shadow-2xl">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-bold">Out of AI Credits</h2>
+            <h2 id="paywall-title" className="text-2xl font-bold">Out of AI Credits</h2>
             <p className="mt-1 text-sm text-zinc-400">
               Purchase a credit pack to keep generating decks with AI.
             </p>
@@ -67,6 +75,7 @@ export default function PaywallModal({ onClose }: Props) {
 
           <button
             onClick={onClose}
+            aria-label="Close modal"
             className="ml-4 rounded-lg p-1 text-zinc-400 transition hover:text-white"
           >
             ✕

@@ -1,27 +1,29 @@
 import { createClient } from '@/lib/supabase/client';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
-export async function redirectAfterAuth(router: AppRouterInstance) {
+export async function redirectAfterAuth(router: AppRouterInstance, userId?: string) {
   const supabase = createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let uid = userId;
 
-  if (!user) {
-    router.push('/login');
-    return;
+  if (!uid) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    uid = user.id;
   }
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('onboarding_complete')
-    .eq('id', user.id)
+    .eq('id', uid)
     .single();
 
-  if (!profile?.onboarding_complete) {
-    router.push('/onboarding');
-  } else {
-    router.push('/dashboard');
-  }
+  router.push(profile?.onboarding_complete ? '/dashboard' : '/onboarding');
 }

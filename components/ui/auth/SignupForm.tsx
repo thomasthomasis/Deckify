@@ -35,12 +35,12 @@ export default function SignupForm() {
 
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       setError(error.message);
     } else {
-      await redirectAfterAuth(router);
+      await redirectAfterAuth(router, data.user?.id);
       router.refresh();
     }
 

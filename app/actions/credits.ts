@@ -28,7 +28,8 @@ export async function spendCredit(): Promise<boolean> {
 
   if (!user) throw new Error('Unauthorized');
 
-  const { data } = await supabase.rpc('spend_ai_credit', { p_user_id: user.id });
+  const { data, error } = await supabase.rpc('spend_ai_credit', { p_user_id: user.id });
+  if (error) throw new Error(`Credit system error: ${error.message}`);
 
   return data === true;
 }

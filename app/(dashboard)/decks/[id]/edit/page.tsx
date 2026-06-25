@@ -25,16 +25,7 @@ export default async function EditDeckPage({ params }: Props) {
 
   const { data: deck } = await supabase
     .from('decks')
-    .select(
-      `
-      *,
-      cards(
-        id,
-        front,
-        back
-      )
-      `,
-    )
+    .select('id, title, description, is_public, user_id, cards(id, front, back)')
     .eq('id', id)
     .single();
 

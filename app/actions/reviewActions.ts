@@ -6,7 +6,11 @@ import { updateStreakAndCards } from '@/lib/profile/updateStats';
 import { calculateXP } from '@/lib/study/xp';
 import { Rating } from '@/lib/study/algorithm';
 
+const MAX_STUDY_TIME_SECONDS = 300;
+
 export async function submitReview(cardId: string, rating: Rating, studyTimeSeconds: number) {
+  const clampedStudyTime = Math.max(0, Math.min(Math.floor(studyTimeSeconds), MAX_STUDY_TIME_SECONDS));
+
   const supabase = await createClient();
 
   const {
@@ -34,7 +38,7 @@ export async function submitReview(cardId: string, rating: Rating, studyTimeSeco
       reason: `card_review_${rating}`,
     }),
 
-    updateStreakAndCards(user.id, studyTimeSeconds),
+    updateStreakAndCards(user.id, clampedStudyTime),
   ]);
 
   if (xpResult.error) {

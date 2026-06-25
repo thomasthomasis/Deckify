@@ -37,18 +37,20 @@ export default function Flashcard({ cards }: Props) {
   }
 
   const handleRating = useCallback(
-    (rating: Rating) => {
+    async (rating: Rating) => {
       if (ratingInFlight.current || !card) return;
       ratingInFlight.current = true;
 
       const elapsed = Math.round((Date.now() - cardShownAt.current) / 1000);
       const studyTimeSeconds = Math.min(elapsed, MAX_SECONDS_PER_CARD);
 
-      submitReview(card.id, rating, studyTimeSeconds).catch(() => {
-        toast.error('Failed to save review — progress may not be recorded.');
-      });
-
-      handleNext();
+      try {
+        await submitReview(card.id, rating, studyTimeSeconds);
+        handleNext();
+      } catch {
+        toast.error('Failed to save review — please try again.');
+        ratingInFlight.current = false;
+      }
     },
     [card],
   );
@@ -88,13 +90,43 @@ export default function Flashcard({ cards }: Props) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.25 }}
-          onClick={() => setShowAnswer(!showAnswer)}
-          className="mt-10 cursor-pointer rounded-3xl border border-white/10 bg-white/5 p-12 text-center"
+          transition={{ duration: 0.2 }}
         >
-          <p className="text-sm text-zinc-400">{showAnswer ? 'Answer' : 'Question'}</p>
+          <div
+            style={{ perspective: '1200px' }}
+            className="mt-10 cursor-pointer"
+            onClick={() => setShowAnswer((v) => !v)}
+          >
+            <motion.div
+              animate={{ rotateY: showAnswer ? 180 : 0 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              style={{ transformStyle: 'preserve-3d', position: 'relative', minHeight: '220px' }}
+              className="rounded-3xl"
+            >
+              {/* Front */}
+              <div
+                style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+                className="absolute inset-0 flex flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/5 p-12 text-center"
+              >
+                <p className="text-sm text-zinc-400">Question</p>
+                <h2 className="mt-6 text-3xl font-bold">{card.front}</h2>
+                <p className="mt-6 text-xs text-zinc-500">Click to reveal answer</p>
+              </div>
 
-          <h2 className="mt-8 text-3xl font-bold">{showAnswer ? card.back : card.front}</h2>
+              {/* Back */}
+              <div
+                style={{
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                }}
+                className="absolute inset-0 flex flex-col items-center justify-center rounded-3xl border border-emerald-400/20 bg-emerald-500/5 p-12 text-center"
+              >
+                <p className="text-sm text-emerald-400">Answer</p>
+                <h2 className="mt-6 text-3xl font-bold">{card.back}</h2>
+              </div>
+            </motion.div>
+          </div>
         </motion.div>
       </AnimatePresence>
 

@@ -10,7 +10,7 @@ export default function ProfileHeader({ displayName, email }: ProfileHeader) {
   const initials = name.charAt(0).toUpperCase();
 
   return (
-    <section className="reounded-3xl border border-white/10 bg-white/5 p-8">
+    <section className="rounded-3xl border border-white/10 bg-white/5 p-8">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-6">
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-emerald-500 text-4xl font-bold text-black">

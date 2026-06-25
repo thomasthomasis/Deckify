@@ -16,6 +16,14 @@ interface GenerateCardsInput {
 }
 
 export async function generateAICards({ notes, amount }: GenerateCardsInput) {
+  if (!notes || typeof notes !== 'string') {
+    throw new Error('Notes are required');
+  }
+
+  if (notes.length > MAX_NOTES_LENGTH) {
+    throw new Error('Notes exceed maximum length of 50,000 characters');
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,42 +33,19 @@ export async function generateAICards({ notes, amount }: GenerateCardsInput) {
     throw new Error('Unauthorized');
   }
 
-  const { data: stats } = await supabase.from("user_stats").select("ai_credits").eq("user_id", user.id).single();
-  if((stats?.ai_credits ?? 0) <= 0) {
-    throw new Error('Insufficient credits');
-  } 
-
-  if (!notes || typeof notes !== 'string') {
-    throw new Error('Notes are required');
-  }
-
-  if (notes.length > MAX_NOTES_LENGTH) {
-    throw new Error('Notes exceed maximum length of 50,000 characters');
-  }
-
   const safeAmount = Math.min(Math.max(1, Math.floor(Number(amount) || 10)), MAX_CARDS);
+
+  // Atomically spend credit before calling OpenAI — prevents abuse with 1 credit
+  const { data: spent, error: spendError } = await supabase.rpc('spend_ai_credit', { p_user_id: user.id });
+  if (spendError) throw new Error('Failed to process credit. Please try again.');
+  if (spent !== true) throw new Error('Insufficient credits');
 
   const completion = await openai.chat.completions.create({
     model: 'gpt-4.1-mini',
     messages: [
       {
         role: 'system',
-        content: `
-Generate ${safeAmount} flashcards.
-
-Return ONLY JSON.
-
-Format:
-
-{
- "cards":[
-   {
-     "front":"",
-     "back":""
-   }
- ]
-}
-`,
+        content: `Generate ${safeAmount} flashcards.\n\nReturn ONLY JSON.\n\nFormat:\n\n{\n "cards":[\n   {\n     "front":"",\n     "back":""\n   }\n ]\n}`,
       },
       {
         role: 'user',
@@ -72,7 +57,16 @@ Format:
     },
   });
 
-  const result = JSON.parse(completion.choices[0].message.content ?? '{}');
+  let result: { cards?: unknown[] };
+  try {
+    result = JSON.parse(completion.choices[0].message.content ?? '{}');
+  } catch {
+    throw new Error('Failed to parse AI response. Please try again.');
+  }
 
-  return result.cards;
+  if (!Array.isArray(result.cards) || result.cards.length === 0) {
+    throw new Error('AI returned an unexpected response. Please try again.');
+  }
+
+  return result.cards as { front: string; back: string }[];
 }

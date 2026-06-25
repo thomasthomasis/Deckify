@@ -1,9 +1,16 @@
 export type Rating = 'again' | 'hard' | 'good' | 'easy';
 
-export function calculateNextReview(rating: Rating, review: any) {
-  let interval = review?.interval ?? 1;
-  let repetitions = review?.repetitions ?? 0;
-  let ease_factor = review?.ease_factor ?? 2.5;
+interface CardReview {
+  interval?: number | null;
+  repetitions?: number | null;
+  ease_factor?: number | null;
+}
+
+export function calculateNextReview(rating: Rating, review: CardReview | null | undefined) {
+  // Guard against NaN/null — comparison with NaN is always false, so ?? fallback triggers
+  let interval = (review?.interval ?? 0) > 0 ? review!.interval! : 1;
+  let repetitions = (review?.repetitions ?? -1) >= 0 ? review!.repetitions! : 0;
+  let ease_factor = (review?.ease_factor ?? 0) >= 1.3 ? review!.ease_factor! : 2.5;
 
   if (rating === 'again') {
     repetitions = 0;

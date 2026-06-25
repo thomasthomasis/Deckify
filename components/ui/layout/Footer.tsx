@@ -57,7 +57,7 @@ export default function Footer() {
               <Mail size={22} />
             </Link>
 
-            <Link href="https://github/thomasthomasis.com">
+            <Link href="https://github.com/thomasisloane">
               <FaGithub size={22} />
             </Link>
 

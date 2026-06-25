@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 
 import { generateAICards } from '@/app/actions/ai';
 import { createDeck } from '@/app/actions/decks';
-import { spendCredit } from '@/app/actions/credits';
 import FlashcardEditor from './FlashcardEditor';
 import PaywallModal from '@/components/ui/credits/PaywallModal';
 
@@ -66,9 +65,16 @@ export default function AIDeckForm({ initialCredits }: Props) {
       const generatedCards = await generateAICards({ notes, amount });
       setCards(generatedCards);
       setGenerated(true);
+      setCredits((prev) => prev - 1);
       toast.success('Cards generated!');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to generate cards');
+      const msg = error instanceof Error ? error.message : '';
+      if (msg === 'Insufficient credits') {
+        setCredits(0);
+        setShowPaywall(true);
+      } else {
+        toast.error(msg || 'Failed to generate cards');
+      }
     } finally {
       setLoading(false);
     }
@@ -88,16 +94,6 @@ export default function AIDeckForm({ initialCredits }: Props) {
     setLoading(true);
 
     try {
-      const credited = await spendCredit();
-
-      if (!credited) {
-        setCredits(0);
-        setShowPaywall(true);
-        return;
-      }
-
-      setCredits((prev) => prev - 1);
-
       const deck = await createDeck({
         title,
         description,
@@ -119,7 +115,16 @@ export default function AIDeckForm({ initialCredits }: Props) {
     <>
       {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} />}
 
-      <div className="mt-10 space-y-8">
+      <div className="mt-6 flex justify-end">
+        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm">
+          <span className="text-zinc-400">AI Credits</span>
+          <span className={`font-bold ${credits === 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+            {credits}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-4 space-y-8">
         {!generated && (
           <>
             <div>

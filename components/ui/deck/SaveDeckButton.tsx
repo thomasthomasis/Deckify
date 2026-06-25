@@ -2,7 +2,7 @@
 
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { saveDeckToLibrary, unsaveDeckFromLibrary } from '@/app/actions/library';
 
 interface Props {
   deckId: string;
@@ -17,41 +17,16 @@ export default function SaveDeckButton({ deckId, initiallySaved }: Props) {
     setLoading(true);
 
     try {
-      const supabase = createClient();
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        toast.error('You must be logged in');
-        return;
-      }
-
       if (saved) {
-        const { error } = await supabase
-          .from('saved_decks')
-          .delete()
-          .eq('deck_id', deckId)
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
+        await unsaveDeckFromLibrary(deckId);
         setSaved(false);
         toast.success('Removed from library');
       } else {
-        const { error } = await supabase.from('saved_decks').insert({
-          deck_id: deckId,
-          user_id: user.id,
-        });
-
-        if (error) throw error;
-
+        await saveDeckToLibrary(deckId);
         setSaved(true);
         toast.success('Added to library');
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error('Something went wrong');
     } finally {
       setLoading(false);

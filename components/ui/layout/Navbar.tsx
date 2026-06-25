@@ -1,26 +1,14 @@
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
-import { createClient } from '@/lib/supabase/server';
+import type { User } from '@supabase/supabase-js';
 import NavbarUserMenu from './NavbarUserMenu';
 
-export default async function Navbar() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+interface Props {
+  user: User | null;
+  credits: number;
+}
 
-  let credits = 0;
-  if (user) {
-    try {
-      const { data } = await supabase
-        .from('user_stats')
-        .select('ai_credits')
-        .eq('user_id', user.id)
-        .single();
-      credits = data?.ai_credits ?? 0;
-    } catch {
-      // ai_credits column may not exist yet
-    }
-  }
-
+export default function Navbar({ user, credits }: Props) {
   return (
     <header className="flex h-20 items-center justify-between border-b border-white/10 px-6">
       <Link href="/dashboard" className="text-xl font-bold">

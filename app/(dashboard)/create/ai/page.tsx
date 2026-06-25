@@ -23,18 +23,9 @@ export default async function AIPage() {
   return (
     <main className="min-h-screen bg-zinc-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-5xl">
-        <div className="flex items-center justify-between">
-          <Link href="/create" className="text-sm text-zinc-400 transition hover:text-white">
-            ← Back to Create Deck
-          </Link>
-
-          <div className="flex items-center gap-2 p-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm">
-            <span className="text-zinc-400">AI Credits</span>
-            <span className={`font-bold ${credits === 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-              {credits}
-            </span>
-          </div>
-        </div>
+        <Link href="/create" className="text-sm text-zinc-400 transition hover:text-white">
+          ← Back to Create Deck
+        </Link>
 
         <h1 className="mt-8 text-4xl font-bold">Generate with AI ✨</h1>
 

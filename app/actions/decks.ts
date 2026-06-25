@@ -101,20 +101,13 @@ export async function updateDeck({ deckId, title, description, isPublic, cards }
     }
   }
 
-  for (const card of cards) {
-    if (!card.id) continue;
+  const cardsToUpdate = cards
+    .filter((c) => c.id)
+    .map((c) => ({ id: c.id as string, deck_id: deckId, front: c.front, back: c.back }));
 
-    const { error } = await supabase
-      .from('cards')
-      .update({
-        front: card.front,
-        back: card.back,
-      })
-      .eq('id', card.id);
-
-    if (error) {
-      throw error;
-    }
+  if (cardsToUpdate.length) {
+    const { error } = await supabase.from('cards').upsert(cardsToUpdate);
+    if (error) throw error;
   }
 
   const newCards = cards

@@ -23,6 +23,7 @@ export default function NavbarUserMenu() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
+        aria-label="Open account menu"
         className="text-zinc-400 transition hover:text-white"
       >
         <UserCircle size={28} />

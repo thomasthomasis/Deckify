@@ -1,12 +1,22 @@
 import Link from 'next/link';
 
+interface LibraryDeck {
+  id: string;
+  title: string;
+  description?: string | null;
+  cards?: { id: string }[];
+  profiles?: { display_name?: string | null } | { display_name?: string | null }[] | null;
+}
+
 interface Props {
-  deck: any;
+  deck: LibraryDeck;
   isOwner?: boolean;
 }
 
 export default function LibraryDeckCard({ deck, isOwner = false }: Props) {
   const cardCount = deck.cards?.length ?? 0;
+  const profileEntry = Array.isArray(deck.profiles) ? deck.profiles[0] : deck.profiles;
+  const displayName = profileEntry?.display_name;
 
   return (
     <div className="group relative flex flex-col rounded-2xl border border-white/10 bg-white/5 p-5 transition hover:border-white/20">
@@ -31,7 +41,7 @@ export default function LibraryDeckCard({ deck, isOwner = false }: Props) {
       <div className="mt-6 mb-3 flex gap-4 text-sm text-zinc-400">
         <span>📚 {cardCount} cards</span>
 
-        {deck.profiles?.display_name && <span>👤 {deck.profiles.display_name}</span>}
+        {displayName && <span>👤 {displayName}</span>}
       </div>
 
       {/* Actions */}

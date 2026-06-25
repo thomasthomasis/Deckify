@@ -95,8 +95,6 @@ export default function ManualDeckForm() {
       router.push(`/decks/${deck.id}`);
     }
     catch(error) {
-      console.error(error);
-
       toast.error(
         error instanceof Error
         ? error.message

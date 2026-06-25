@@ -1,9 +1,21 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/rateLimit';
 
 const MAX_DISPLAY_NAME_LENGTH = 50;
 
 export async function PATCH(request: Request) {
+  const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL;
+  const origin = request.headers.get('origin');
+  if (siteOrigin && origin && origin !== siteOrigin) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'anonymous';
+  if (!await rateLimit(`profile:${ip}`, 10, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const supabase = await createClient();
 
   const {

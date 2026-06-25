@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import GoogleButton from '@/components/ui/auth/GoogleButton';
-import GoogleIcon from '@/components/ui/GoogleIcon';
 
 export default function LoginForm() {
   const supabase = createClient();
@@ -21,17 +20,12 @@ export default function LoginForm() {
     setLoading(true);
     setError('');
 
-    const supabase = createClient();
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setError(error.message);
     } else {
-      await redirectAfterAuth(router);
+      await redirectAfterAuth(router, data.user?.id);
       router.refresh();
     }
 
@@ -66,6 +60,7 @@ export default function LoginForm() {
       </div>
 
       <input
+        type="email"
         className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none focus:border-emerald-500"
         required
         placeholder="Email"
@@ -99,7 +94,7 @@ export default function LoginForm() {
       </button>
 
       <p className="mt-6 text-center text-sm text-zinc-400">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link href="/signup" className="font-medium text-emerald-400 transition hover:text-emerald-300">
           Create one
         </Link>
