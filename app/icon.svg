@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Background -->
+  <rect width="32" height="32" rx="8" fill="#09090b"/>
+
+  <!-- Back card -->
+  <rect x="9" y="8" width="16" height="11" rx="2.5" fill="#27272a" stroke="#3f3f46" stroke-width="1"/>
+
+  <!-- Front card -->
+  <rect x="7" y="11" width="16" height="11" rx="2.5" fill="#18181b" stroke="#10b981" stroke-width="1.25"/>
+
+  <!-- Emerald line on front card -->
+  <rect x="10" y="15" width="7" height="1.5" rx="0.75" fill="#10b981"/>
+  <rect x="10" y="18" width="4.5" height="1.5" rx="0.75" fill="#3f3f46"/>
+</svg>
