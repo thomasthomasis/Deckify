@@ -14,9 +14,10 @@ interface Review {
 interface Props {
   decks: Deck[];
   reviews: Review[];
+  allReviews: Review[];
 }
 
-export default function DeckList({ decks, reviews }: Props) {
+export default function DeckList({ decks, reviews, allReviews }: Props) {
   if (decks.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-white/10 p-10 text-center">
@@ -34,15 +35,16 @@ export default function DeckList({ decks, reviews }: Props) {
     );
   }
 
-  // O(n) lookup — build set once, not inside the per-deck loop
   const dueCardIds = new Set(reviews.map((r) => r.card_id));
+  const studiedCardIds = new Set(allReviews.map((r) => r.card_id));
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {decks.map((deck) => {
         const cardCount = deck.cards?.length ?? 0;
         const dueCount = deck.cards?.filter((card) => dueCardIds.has(card.id)).length ?? 0;
-        const progress = cardCount > 0 ? Math.round(((cardCount - dueCount) / cardCount) * 100) : 0;
+        const studiedCount = deck.cards?.filter((card) => studiedCardIds.has(card.id)).length ?? 0;
+        const progress = cardCount > 0 ? Math.round((studiedCount / cardCount) * 100) : 0;
 
         return (
           <DeckCard

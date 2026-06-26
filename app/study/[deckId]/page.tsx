@@ -5,15 +5,17 @@ import Link from 'next/link';
 
 interface Props {
   params: Promise<{ deckId: string }>;
-  searchParams: Promise<{ restudy?: string }>;
+  searchParams: Promise<{ restudy?: string; from?: string }>;
 }
 
 export default async function StudyPage({ params, searchParams }: Props) {
   const supabase = await createClient();
 
   const { deckId } = await params;
-  const { restudy } = await searchParams;
+  const { restudy, from } = await searchParams;
   const isRestudy = restudy === 'true';
+  const backHref = from === 'dashboard' ? '/dashboard' : `/decks/${deckId}`;
+  const backLabel = from === 'dashboard' ? '← Back to Dashboard' : '← Back to Deck';
 
   const {
     data: { user },
@@ -68,10 +70,10 @@ export default async function StudyPage({ params, searchParams }: Props) {
     <main className="min-h-screen bg-zinc-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-3xl">
         <Link
-          href={`/decks/${deckId}`}
+          href={backHref}
           className="mb-4 inline-flex items-center text-sm text-zinc-400 transition hover:text-white"
         >
-          ← Back to Deck
+          {backLabel}
         </Link>
 
         <div className="flex items-center gap-3">
@@ -95,7 +97,7 @@ export default async function StudyPage({ params, searchParams }: Props) {
             <p className="mt-3 text-zinc-400">No cards due right now.</p>
 
             <Link
-              href={`/study/${deckId}?restudy=true`}
+              href={`/study/${deckId}?restudy=true${from ? `&from=${from}` : ''}`}
               className="mt-6 inline-block rounded-xl border border-white/10 px-6 py-3 text-sm font-semibold transition hover:bg-white/10"
             >
               Restudy all cards anyway

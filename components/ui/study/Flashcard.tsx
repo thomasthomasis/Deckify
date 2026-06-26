@@ -37,20 +37,18 @@ export default function Flashcard({ cards }: Props) {
   }
 
   const handleRating = useCallback(
-    async (rating: Rating) => {
+    (rating: Rating) => {
       if (ratingInFlight.current || !card) return;
       ratingInFlight.current = true;
 
       const elapsed = Math.round((Date.now() - cardShownAt.current) / 1000);
       const studyTimeSeconds = Math.min(elapsed, MAX_SECONDS_PER_CARD);
 
-      try {
-        await submitReview(card.id, rating, studyTimeSeconds);
-        handleNext();
-      } catch {
-        toast.error('Failed to save review — please try again.');
-        ratingInFlight.current = false;
-      }
+      handleNext();
+
+      submitReview(card.id, rating, studyTimeSeconds).catch(() => {
+        toast.error('Failed to save review.');
+      });
     },
     [card],
   );
@@ -58,7 +56,10 @@ export default function Flashcard({ cards }: Props) {
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (!showAnswer) {
-        if (event.key === 'Enter') setShowAnswer(true);
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setShowAnswer(true);
+        }
         return;
       }
 

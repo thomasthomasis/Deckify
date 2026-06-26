@@ -18,9 +18,15 @@ export default function DeckCard({ id, title, cardCount, dueCount, progress }: D
           <p className="mt-2 text-sm text-zinc-400">{cardCount} cards</p>
         </div>
 
-        <div className="rounded-full bg-emerald-500/10 px-3 py-1 text-sm text-emerald-400">
-          {dueCount} due
-        </div>
+        {dueCount > 0 ? (
+          <div className="rounded-full bg-amber-500/10 px-3 py-1 text-sm text-amber-400">
+            {dueCount} due
+          </div>
+        ) : progress > 0 ? (
+          <div className="rounded-full bg-emerald-500/10 px-3 py-1 text-sm text-emerald-400">
+            Up to date
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-6">
@@ -47,7 +53,7 @@ export default function DeckCard({ id, title, cardCount, dueCount, progress }: D
         </Link>
 
         <Link
-          href={`/study/${id}`}
+          href={`/study/${id}?from=dashboard`}
           className="flex-1 rounded-xl bg-emerald-500 py-3 text-center text-sm font-semibold text-black transition hover:bg-emerald-400"
         >
           {dueCount > 0 ? `Study ${dueCount}` : 'Review'}

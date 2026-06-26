@@ -33,14 +33,15 @@ export default async function DashboardPage({ searchParams }: Props) {
       .single(),
     supabase.from('decks').select('id, title, cards(id)').eq('user_id', user.id),
     supabase.from('saved_decks').select('deck:decks(id, title, cards(id))').eq('user_id', user.id),
-    supabase.from('card_reviews').select('card_id').eq('user_id', user.id).lte('next_review', today),
+    supabase.from('card_reviews').select('card_id, next_review').eq('user_id', user.id),
   ]);
 
   const stats = statsResult.data;
   const profileData = statsResult.data?.profiles;
   const displayName =
     (Array.isArray(profileData) ? profileData[0]?.display_name : profileData?.display_name) ?? 'there';
-  const reviews = reviewsResult.data ?? [];
+  const allReviews = reviewsResult.data ?? [];
+  const reviews = allReviews.filter((r) => r.next_review && r.next_review <= today);
 
   type DeckRow = { id: string; title: string; cards: { id: string }[] };
 
@@ -93,7 +94,7 @@ export default async function DashboardPage({ searchParams }: Props) {
           </div>
 
           <div className="mt-8">
-            <DeckList decks={paginatedDecks} reviews={reviews} />
+            <DeckList decks={paginatedDecks} reviews={reviews} allReviews={allReviews} />
           </div>
 
           <Pagination
