@@ -1,5 +1,11 @@
 import { unstable_cache } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAnonClient } from '@supabase/supabase-js';
+
+const publicSupabase = createAnonClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+);
 
 const DECK_COLUMNS = 'id, title, description, save_count, study_count, created_at, user_id, is_public';
 
@@ -23,8 +29,7 @@ export async function searchDecks(query: string, page = 1) {
 
 export const getTrendingDecks = unstable_cache(
   async () => {
-    const supabase = await createClient();
-    const { data } = await supabase
+    const { data } = await publicSupabase
       .from('decks')
       .select(DECK_COLUMNS)
       .eq('is_public', true)
@@ -38,8 +43,7 @@ export const getTrendingDecks = unstable_cache(
 
 export const getPopularDecks = unstable_cache(
   async () => {
-    const supabase = await createClient();
-    const { data } = await supabase
+    const { data } = await publicSupabase
       .from('decks')
       .select(DECK_COLUMNS)
       .eq('is_public', true)
@@ -53,8 +57,7 @@ export const getPopularDecks = unstable_cache(
 
 export const getRecentDecks = unstable_cache(
   async () => {
-    const supabase = await createClient();
-    const { data } = await supabase
+    const { data } = await publicSupabase
       .from('decks')
       .select(DECK_COLUMNS)
       .eq('is_public', true)

@@ -69,7 +69,7 @@ CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     AS $$
 BEGIN
-  INSERT INTO user_stats (user_id, xp, level, streak, ai_credits, cards_studied)
+  INSERT INTO user_stats (user_id, xp, level, current_streak, ai_credits, total_cards_reviewed)
   VALUES (NEW.id, 0, 1, 0, 3, 0)
   ON CONFLICT (user_id) DO NOTHING;
 
