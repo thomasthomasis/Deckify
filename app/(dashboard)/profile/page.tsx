@@ -43,7 +43,7 @@ export default async function ProfilePage() {
     .single();
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-0 text-white">
+    <main className="min-h-screen bg-zinc-950 px-4 py-0 text-white md:px-6">
       <div className="mx-auto max-w-6xl">
         <h1 className="mt-8 text-4xl font-bold">Profile</h1>
 

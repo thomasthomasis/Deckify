@@ -29,9 +29,9 @@ export default function ProfileStats({
   const progress = Math.min((currentXP / xpPerLevel) * 100);
 
   return (
-    <section className="grid gap-6 md:grid-cols-4">
+    <section className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
       {/* Level Progress */}
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 md:col-span-4">
+      <div className="col-span-2 rounded-3xl border border-white/10 bg-white/5 p-6 md:col-span-4">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-zinc-400">Current Level</p>
