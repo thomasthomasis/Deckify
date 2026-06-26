@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { redirect } from 'next/navigation';
 
 export async function deleteAccount(): Promise<void> {
   const supabase = await createClient();
@@ -17,8 +16,5 @@ export async function deleteAccount(): Promise<void> {
 
   if (error) throw new Error('Failed to delete account. Please try again.');
 
-  // Invalidate the session cookie so the browser is immediately logged out
   await supabase.auth.signOut();
-
-  redirect('/login');
 }

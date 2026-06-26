@@ -16,6 +16,7 @@ export default function DeleteAccountButton() {
     setLoading(true);
     try {
       await deleteAccount();
+      window.location.href = '/login';
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to delete account');
       setLoading(false);
