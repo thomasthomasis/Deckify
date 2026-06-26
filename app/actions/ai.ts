@@ -41,7 +41,7 @@ export async function generateAICards({ notes, amount }: GenerateCardsInput) {
   if (spent !== true) throw new Error('Insufficient credits');
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4.1-mini',
+    model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',

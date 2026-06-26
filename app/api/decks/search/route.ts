@@ -4,7 +4,7 @@ import { rateLimit } from '@/lib/rateLimit';
 
 export async function GET(request: Request) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'anonymous';
-  if (!rateLimit(`search:${ip}`, 60, 60_000)) {
+  if (!(await rateLimit(`search:${ip}`, 60, 60_000))) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
 
