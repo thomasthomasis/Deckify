@@ -25,13 +25,29 @@ export async function completeOnboarding(name: string) {
 
   const { error } = await supabase
     .from('profiles')
-    .update({
+    .upsert({
+      id: user.id,
       display_name: trimmed,
       onboarding_complete: true,
-    })
-    .eq('id', user.id);
+    }, { onConflict: 'id' });
 
   if (error) {
     throw error;
   }
+
+  await supabase.from('user_stats').upsert({
+    user_id: user.id,
+    xp: 0,
+    level: 1,
+    current_streak: 0,
+    ai_credits: 3,
+    total_cards_reviewed: 0,
+  }, { onConflict: 'user_id' });
+
+  await supabase.from('user_settings').upsert({
+    user_id: user.id,
+    daily_goal: 10,
+    reminders_enabled: true,
+    timezone: 'UTC',
+  }, { onConflict: 'user_id' });
 }

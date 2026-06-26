@@ -20,7 +20,6 @@ export default function OnboardingForm() {
     try {
       await completeOnboarding(name);
       router.push('/dashboard');
-      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
       setLoading(false);
